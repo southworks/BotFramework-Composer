@@ -207,7 +207,7 @@ const Home: React.FC<RouteComponentProps> = () => {
             )}
           </div>
           <div css={home.resourcesContainer}>
-            <h2 css={home.subtitle}>{formatMessage('Resources')}&nbsp;</h2>
+            <h2 css={home.subtitle}>{formatMessage('Resources')}</h2>
             <div css={home.rowContainer}>
               {resources.map((item, index) => (
                 <CardWidget
