@@ -108,7 +108,7 @@ export const IconMenu: React.FC<IconMenuProps> = ({
   return (
     <OverflowSet
       vertical
-      aria-label="icon menu"
+      aria-label="more options icon"
       overflowItems={menuItems}
       onRenderItem={onRenderItem}
       onRenderOverflowButton={onRenderOverflowButton}
