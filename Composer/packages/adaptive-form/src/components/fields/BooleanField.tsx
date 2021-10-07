@@ -75,6 +75,7 @@ const BooleanField: React.FC<FieldProps> = function CheckboxWidget(props) {
         id={id}
         options={options}
         responsiveMode={ResponsiveMode.large}
+        role={'dropdown'}
         selectedKey={selectedKey}
         styles={{
           root: { width: '100%' },
