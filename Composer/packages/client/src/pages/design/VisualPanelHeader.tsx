@@ -175,7 +175,7 @@ const VisualPanelHeader: React.FC<VisualPanelHeaderProps> = React.memo((props) =
     <div css={pageStyles.visualPanelHeaderContainer}>
       <div style={{ width: '85%' }}>
         <Breadcrumb
-          ariaLabel={formatMessage('Navigation Path')}
+          ariaLabel={formatMessage('Breadcrumb Path')}
           data-testid="Breadcrumb"
           items={items}
           styles={pageStyles.breadcrumbClass}
