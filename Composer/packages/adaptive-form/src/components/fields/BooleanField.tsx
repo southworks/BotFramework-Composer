@@ -72,6 +72,7 @@ const BooleanField: React.FC<FieldProps> = function CheckboxWidget(props) {
       />
       <Dropdown
         ariaLabel={label || formatMessage('boolean field')}
+        aria-hidden={selectedKey === '' ? true : false}
         id={id}
         options={options}
         responsiveMode={ResponsiveMode.large}
