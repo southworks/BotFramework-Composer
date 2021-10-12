@@ -49,16 +49,16 @@ const DesignPage: React.FC<RouteComponentProps<{ dialogId: string; projectId: st
       >
         <div css={contentWrapper}>
           <div css={splitPaneContainer}>
-            <div css={splitPaneWrapper}>
+            <div css={splitPaneWrapper} role="row">
               <SideBar projectId={activeBot} />
             </div>
           </div>
         </div>
 
-        <div css={contentWrapper} role="main">
+        <div css={contentWrapper} role="presentation">
           <CommandBar projectId={activeBot} />
           <Conversation css={splitPaneContainer}>
-            <div css={splitPaneWrapper}>
+            <div css={splitPaneWrapper} role="row">
               <Split
                 resetOnDoubleClick
                 initialPrimarySize="65%"

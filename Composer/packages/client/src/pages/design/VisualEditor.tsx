@@ -105,6 +105,7 @@ const VisualEditor: React.FC<VisualEditorProps> = (props) => {
         aria-label={formatMessage('Visual editor')}
         css={visualEditor(triggerButtonVisible || !selected)}
         data-testid="VisualEditor"
+        role="presentation"
       >
         {!isRemoteSkill ? (
           <VisualDesigner

@@ -88,6 +88,7 @@ const DescriptionCallout: React.FC<DescriptionCalloutProps> = function Descripti
         <Icon
           aria-label={title + '; ' + description}
           iconName={'Unknown'}
+          role="img"
           styles={{
             root: {
               width: '16px',

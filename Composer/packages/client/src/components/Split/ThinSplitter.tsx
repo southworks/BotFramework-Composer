@@ -44,7 +44,7 @@ export const ThinSplitter = (props: RenderSplitterProps) => {
   const { horizontal, pixelSize, dragging } = props;
 
   return (
-    <HitArea dragging={dragging} horizontal={horizontal}>
+    <HitArea dragging={dragging} horizontal={horizontal} role="presentation">
       <Splitter className={splitVisualClassName} dragging={dragging} horizontal={horizontal} splitterSize={pixelSize} />
     </HitArea>
   );
