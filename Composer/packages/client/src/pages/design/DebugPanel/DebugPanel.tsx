@@ -162,6 +162,7 @@ export const DebugPanel: React.FC = () => {
             {headerPivot}
           </div>
           <div
+            aria-label="Debug Panel"
             css={{ flexGrow: 1, cursor: 'pointer', outline: 'none' }}
             data-testid="header__blank"
             role="button"
