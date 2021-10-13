@@ -45,7 +45,13 @@ export const ThinSplitter = (props: RenderSplitterProps) => {
 
   return (
     <HitArea dragging={dragging} horizontal={horizontal}>
-      <Splitter className={splitVisualClassName} dragging={dragging} horizontal={horizontal} splitterSize={pixelSize} />
+      <Splitter
+        className={splitVisualClassName}
+        dragging={dragging}
+        horizontal={horizontal}
+        splitterSize={pixelSize}
+        title="Splitter"
+      />
     </HitArea>
   );
 };
