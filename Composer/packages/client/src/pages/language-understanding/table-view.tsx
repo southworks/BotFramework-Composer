@@ -192,6 +192,7 @@ const TableView: React.FC<TableViewProps> = (props) => {
         key: 'name',
         name: formatMessage('Intent'),
         fieldName: 'name',
+        role: 'row',
         minWidth: 100,
         maxWidth: 200,
         isResizable: true,
@@ -199,7 +200,7 @@ const TableView: React.FC<TableViewProps> = (props) => {
         onRender: (item: Intent) => {
           const displayName = `#${item.name}`;
           return (
-            <div data-is-focusable css={formCell}>
+            <div data-is-focusable css={formCell} role="columnheader">
               <EditableField
                 multiline
                 ariaLabel={formatMessage(`Name is {name}`, { name: displayName })}
@@ -207,6 +208,7 @@ const TableView: React.FC<TableViewProps> = (props) => {
                 depth={0}
                 id={displayName}
                 name={displayName}
+                role={'row'}
                 value={displayName}
                 onBlur={(_id, value) => {
                   const newValue = value?.trim().replace(/^#/, '');
@@ -224,6 +226,7 @@ const TableView: React.FC<TableViewProps> = (props) => {
       {
         key: 'phrases',
         name: formatMessage('Sample Phrases'),
+        role: 'row',
         fieldName: 'phrases',
         minWidth: 500,
         isResizable: true,
@@ -231,7 +234,7 @@ const TableView: React.FC<TableViewProps> = (props) => {
         onRender: (item) => {
           const text = item.phrases;
           return (
-            <div data-is-focusable css={luPhraseCell}>
+            <div data-is-focusable css={luPhraseCell} role="columnheader">
               <EditableField
                 multiline
                 ariaLabel={formatMessage(`Sample Phrases are {phrases}`, { phrases: text })}
@@ -239,6 +242,7 @@ const TableView: React.FC<TableViewProps> = (props) => {
                 depth={0}
                 id={text}
                 name={text}
+                role={'row'}
                 value={text}
                 onBlur={(_id, value) => {
                   if (value === text) return;
@@ -265,7 +269,7 @@ const TableView: React.FC<TableViewProps> = (props) => {
         onRender: (item) => {
           const text = item.phrases;
           return (
-            <div data-is-focusable css={luPhraseCell}>
+            <div data-is-focusable css={luPhraseCell} role="columnheader">
               <EditableField
                 multiline
                 ariaLabel={formatMessage(`Sample Phrases are {phrases}`, { phrases: text })}
@@ -273,6 +277,7 @@ const TableView: React.FC<TableViewProps> = (props) => {
                 depth={0}
                 id={text}
                 name={text}
+                role={'row'}
                 value={text}
                 onBlur={(_id, value) => {
                   if (value === text) return;
@@ -327,6 +332,7 @@ const TableView: React.FC<TableViewProps> = (props) => {
       {
         key: 'definedIn',
         name: formatMessage('Defined in:'),
+        role: 'columnheader',
         fieldName: 'definedIn',
         minWidth: 100,
         maxWidth: 200,
@@ -340,6 +346,7 @@ const TableView: React.FC<TableViewProps> = (props) => {
               key={id}
               data-is-focusable
               aria-label={formatMessage(`link to where this LUIS intent is defined`)}
+              role="columnheader"
               onClick={() => navigateTo(`${baseURL}dialogs/${id}`)}
             >
               <Link>{id}</Link>
@@ -399,8 +406,8 @@ const TableView: React.FC<TableViewProps> = (props) => {
         data: 'string',
         onRender: (item) => {
           return (
-            <div data-is-focusable css={tableCell}>
-              <div aria-label={formatMessage(`State is {state}`, { state: item.state })} tabIndex={-1}>
+            <div data-is-focusable css={tableCell} role="columnheader">
+              <div aria-label={formatMessage(`State is {state}`, { state: item.state })} role={'row'} tabIndex={-1}>
                 {item.state}
               </div>
             </div>
