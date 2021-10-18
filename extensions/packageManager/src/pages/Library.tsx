@@ -105,7 +105,7 @@ const Library: React.FC = () => {
   const strings = {
     title: formatMessage('Package Manager'),
     editFeeds: formatMessage('Edit feeds'),
-    description: formatMessage('Discover and use components that can be installed into your bot.'),
+    description: formatMessage('Discover and use components that can be installed into your bot. '),
     descriptionLink: formatMessage('Learn more'),
     viewDocumentation: formatMessage('View documentation'),
     installButton: formatMessage('Install'),
@@ -611,7 +611,7 @@ const Library: React.FC = () => {
       <div css={ContentHeaderStyle}>
         <h1 css={HeaderText}>{strings.title}</h1>
         <p>
-          {strings.description}&nbsp;
+          {strings.description}
           <Link href={docsUrl} target="_new">
             {strings.descriptionLink}
           </Link>
