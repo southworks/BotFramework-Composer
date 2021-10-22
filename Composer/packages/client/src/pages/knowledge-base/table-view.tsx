@@ -601,6 +601,7 @@ const TableView: React.FC<TableViewProps> = (props) => {
                       required={isOnlyQuestion}
                       requiredMessage={formatMessage('At least one question is required')}
                       resizable={false}
+                      role={'textbox'}
                       styles={editableField}
                       value={question.content}
                       onBlur={(_id, value = '') => {
@@ -644,6 +645,7 @@ const TableView: React.FC<TableViewProps> = (props) => {
                   id={'NewQuestion'}
                   name={'New Question'}
                   placeholder={formatMessage('Add new question')}
+                  role={'textbox'}
                   styles={editableField}
                   value={''}
                   onBlur={(_id, value) => {
@@ -714,6 +716,7 @@ const TableView: React.FC<TableViewProps> = (props) => {
                 placeholder={formatMessage('Add new answer')}
                 requiredMessage={formatMessage('Answer is required')}
                 resizable={false}
+                role={'textbox'}
                 styles={editableField}
                 value={item.Answer}
                 onBlur={(_id, value) => {
@@ -936,6 +939,7 @@ const TableView: React.FC<TableViewProps> = (props) => {
           groups={groups}
           items={qnaSections}
           layoutMode={DetailsListLayoutMode.justified}
+          role={'textbox'}
           selectionMode={SelectionMode.single}
           onRenderDetailsHeader={onRenderDetailsHeader}
           onRenderRow={onRenderRow}

@@ -214,6 +214,7 @@ const TableView: React.FC<TableViewProps> = (props) => {
                 depth={0}
                 id={displayName}
                 name={displayName}
+                role={'textbox'}
                 value={displayName}
                 onBlur={(_id, value) => {
                   const newValue = value?.trim().replace(/^#/, '');
@@ -246,6 +247,7 @@ const TableView: React.FC<TableViewProps> = (props) => {
                 depth={0}
                 id={text}
                 name={text}
+                role={'textbox'}
                 value={text}
                 onBlur={(_id, value) => {
                   if (value === item.body) return;
@@ -282,6 +284,7 @@ const TableView: React.FC<TableViewProps> = (props) => {
                 depth={0}
                 id={text}
                 name={text}
+                role={'textbox'}
                 value={text}
                 onBlur={(_id, value) => {
                   if (value === item.body) return;
@@ -317,6 +320,7 @@ const TableView: React.FC<TableViewProps> = (props) => {
                 depth={0}
                 id={text}
                 name={text}
+                role={'textbox'}
                 value={text}
                 onBlur={(_id, value) => {
                   if (value === item.body) return;
@@ -468,6 +472,7 @@ const TableView: React.FC<TableViewProps> = (props) => {
           items={templatesToRender}
           // getKey={item => item.name}
           layoutMode={DetailsListLayoutMode.justified}
+          //role={list}
           selectionMode={SelectionMode.none}
           styles={{
             root: {

@@ -28,6 +28,7 @@ const Splitter = styled.div(
     boxSizing: 'border-box',
     outline: 'none',
     overflow: 'hidden',
+    role: 'separator',
     height: horizontal ? '1px' : '100%',
     width: horizontal ? '100%' : '1px',
     marginLeft: horizontal ? '0' : getCenteredMargin(splitterSize),
@@ -45,7 +46,14 @@ export const ThinSplitter = (props: RenderSplitterProps) => {
 
   return (
     <HitArea dragging={dragging} horizontal={horizontal}>
-      <Splitter className={splitVisualClassName} dragging={dragging} horizontal={horizontal} splitterSize={pixelSize} />
+      <Splitter
+        className={splitVisualClassName}
+        dragging={dragging}
+        horizontal={horizontal}
+        role="separator"
+        splitterSize={pixelSize}
+        title="Splitter"
+      />
     </HitArea>
   );
 };

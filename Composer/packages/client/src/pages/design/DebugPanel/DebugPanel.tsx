@@ -166,6 +166,7 @@ export const DebugPanel: React.FC = () => {
             data-testid="header__blank"
             role="button"
             tabIndex={0}
+            title="Debug Panel"
             onClick={onDebugPaneClick}
             onKeyPress={onDebugPaneClick}
           />
