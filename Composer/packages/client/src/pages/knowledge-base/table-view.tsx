@@ -688,6 +688,7 @@ const TableView: React.FC<TableViewProps> = (props) => {
         fieldName: 'answer',
         minWidth: 350,
         isResizable: true,
+        isCollapsible: true,
         data: 'string',
         onRender: (item, index) => {
           const isSourceSectionInDialog =
