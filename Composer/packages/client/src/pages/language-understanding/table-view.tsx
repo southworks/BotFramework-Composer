@@ -195,6 +195,7 @@ const TableView: React.FC<TableViewProps> = (props) => {
         minWidth: 100,
         maxWidth: 200,
         isResizable: true,
+        isCollapsable: true,
         data: 'string',
         onRender: (item: Intent) => {
           const displayName = `#${item.name}`;
@@ -227,6 +228,7 @@ const TableView: React.FC<TableViewProps> = (props) => {
         fieldName: 'phrases',
         minWidth: 500,
         isResizable: true,
+        isCollapsable: true,
         data: 'string',
         onRender: (item) => {
           const text = item.phrases;
@@ -298,7 +300,7 @@ const TableView: React.FC<TableViewProps> = (props) => {
         onRender: (item) => {
           const text = item[`body-${defaultLanguage}`];
           return (
-            <div data-is-focusable css={luPhraseCell}>
+            <div data-is-focusable css={luPhraseCell} role="columnheader">
               <EditableField
                 multiline
                 ariaLabel={formatMessage(`Sample Phrases are {phrases}`, { phrases: text })}
