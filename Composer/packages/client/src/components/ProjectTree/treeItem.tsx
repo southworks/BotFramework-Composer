@@ -462,6 +462,7 @@ export const TreeItem: React.FC<ITreeItemProps> = ({
       return (
         <TreeItemContent tooltip={link.tooltip}>
           <div
+            role="region"
             data-is-focusable
             aria-label={`${ariaLabel} ${warningContent} ${errorContent}`}
             css={projectTreeItemContainer}
@@ -469,7 +470,7 @@ export const TreeItem: React.FC<ITreeItemProps> = ({
             onBlur={item.onBlur}
             onFocus={item.onFocus}
           >
-            <div css={projectTreeItem} role="presentation" tabIndex={-1}>
+            <div css={projectTreeItem} role="region" tabIndex={-1}>
               {item.itemType != null && TreeIcons[item.itemType] != null && (
                 <Icon
                   iconName={TreeIcons[item.itemType]}
@@ -565,7 +566,7 @@ export const TreeItem: React.FC<ITreeItemProps> = ({
       aria-label={ariaLabel}
       css={navContainer(isMenuOpen, isActive, thisItemSelected, textWidth - overflowIconWidthOnHover, isBroken)}
       data-testid={dataTestId}
-      role={role}
+      role={'region'}
       tabIndex={0}
       onClick={
         onSelect
