@@ -207,7 +207,7 @@ const TableView: React.FC<TableViewProps> = (props) => {
         onRender: (item) => {
           const displayName = `#${item.name}`;
           return (
-            <div data-is-focusable css={formCell}>
+            <div data-is-focusable css={formCell} role="row">
               <EditableField
                 ariaLabel={formatMessage(`Name is {name}`, { name: displayName })}
                 containerStyles={editableFieldContainer}
@@ -234,11 +234,12 @@ const TableView: React.FC<TableViewProps> = (props) => {
         fieldName: 'responses',
         minWidth: 500,
         isResizable: true,
+        isCollapsible: true,
         data: 'string',
         onRender: (item) => {
           const text = item.body;
           return (
-            <div data-is-focusable css={formCell}>
+            <div data-is-focusable css={formCell} role="row">
               <EditableField
                 multiline
                 ariaLabel={formatMessage(`Response is {response}`, { response: text })}
