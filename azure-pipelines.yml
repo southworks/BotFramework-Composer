@@ -1,3 +1,14 @@
+trigger: none
+
+schedules:
+- cron: "*/30 * * * *"
+  displayName: Every 30 min
+  branches:
+    include:
+    - main
+    - joelmut/test/issue-9163
+  always: true
+
 variables:
   YARN_CACHE_FOLDER: $(Pipeline.Workspace)/.yarn
 
