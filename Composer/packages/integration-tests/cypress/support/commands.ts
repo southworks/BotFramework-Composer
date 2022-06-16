@@ -91,7 +91,7 @@ Cypress.on('uncaught:exception', (err) => {
   return false;
 });
 
-for (const command of ['visit', 'click', 'type', 'clear', 'contains']) {
+for (const command of ['visit', 'click', 'type', 'clear']) {
   Cypress.Commands.overwrite(command, (originalFn, ...args) => {
     const origVal = originalFn(...args);
     return new Promise((resolve) => setTimeout(() => resolve(origVal), COMMAND_DELAY));
