@@ -1,5 +1,6 @@
 {
-  "projectId": "ihpb6e",
+  "projectId": "uc4hya",
+  "recordKey": "30eae5ec-dd6e-42ec-bb37-13034c639a74",
   "ignoreTestFiles": ["**/examples/*", "*.hot-update.js"],
   "supportFile": "cypress/support/index.ts",
   "video": false,
@@ -7,6 +8,6 @@
   "viewportWidth": 1600,
   "viewportHeight": 1200,
   "defaultCommandTimeout": 8000,
-  "baseUrl": "http://localhost:3000",
+  "baseUrl": "http://localhost:3001",
   "retries": 2
 }
