@@ -5,8 +5,8 @@ pr: none
 trigger: none
 
 schedules:
-- cron: "*/10 * * * *"
-  displayName: Every 10 min
+- cron: "*/5 * * * *"
+  displayName: Every 5 min
   branches:
     include:
     - joelmut/test/issue-9163
