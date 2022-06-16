@@ -3,8 +3,8 @@ pr: none
 # Do not run CI validation
 trigger: none
 schedules:
-- cron: "*/10 * * * *"
-  displayName: Every 10 min
+- cron: "*/5 * * * *"
+  displayName: Every 5 min
   branches:
     include:
     - ceci/test/pipeline
@@ -38,6 +38,7 @@ jobs:
           script:
             # Write your commands here
             dotnet nuget add source https://botbuilder.myget.org/F/botbuilder-v4-dotnet-daily/api/v3/index.json
+
             npm install -g @microsoft/generator-bot-empty
       - task: Cache@2
         displayName: Cache Cypress binary
