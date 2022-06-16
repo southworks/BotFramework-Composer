@@ -1,7 +1,11 @@
+# Do not run PR validation
+pr: none
+
+# Do not run CI validation
 trigger: none
 
 schedules:
-- cron: "*/30 * * * *"
+- cron: "*/1 * * * *"
   displayName: Every 30 min
   branches:
     include:
