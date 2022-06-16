@@ -5,8 +5,8 @@ pr: none
 trigger: none
 
 schedules:
-- cron: "*/1 * * * *"
-  displayName: Every 30 min
+- cron: "*/7 * * * *"
+  displayName: Every 7 min
   branches:
     include:
     - main
