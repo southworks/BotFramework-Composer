@@ -1,5 +1,5 @@
 {
-  "projectId": "ihpb6e",
+  "projectId": "ymfyyd",
   "ignoreTestFiles": ["**/examples/*", "*.hot-update.js"],
   "supportFile": "cypress/support/index.ts",
   "video": false,
