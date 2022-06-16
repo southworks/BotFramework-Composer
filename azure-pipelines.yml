@@ -1,17 +1,16 @@
-# Do not run PR validation
-pr: none
+# # Do not run PR validation
+# pr: none
 
-# Do not run CI validation
-trigger: none
+# # Do not run CI validation
+# trigger: none
 
-schedules:
-- cron: "*/7 * * * *"
-  displayName: Every 7 min
-  branches:
-    include:
-    - main
-    - joelmut/test/issue-9163
-  always: true
+# schedules:
+# - cron: "*/8 * * * *"
+#   displayName: Every 8 min
+#   branches:
+#     include:
+#     - joelmut/test/issue-9163
+#   always: true
 
 variables:
   YARN_CACHE_FOLDER: $(Pipeline.Workspace)/.yarn
