@@ -457,7 +457,7 @@ const Publish: React.FC<RouteComponentProps<{ projectId: string; targetName?: st
         }}
       />
       <div css={ContentHeaderStyle}>
-        <h1 css={HeaderText}>{formatMessage('Publish your bots')}</h1>
+        <h1 css={HeaderText}>{formatMessage('Publish your bots v2')}</h1>
       </div>
 
       <Pivot
