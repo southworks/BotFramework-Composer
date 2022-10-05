@@ -253,7 +253,7 @@ export const buildInFunctionsMap: Map<string, FunctionEntity> = new Map<string, 
     new FunctionEntity(
       ['text: string', 'startIndex: number', 'length?: number'],
       ReturnType.String,
-      'Returns new characters from a string. Substring(sourceString, startPos, length). startPos cannot be less than 0. A length greater than source strings length will be taken as the max length of the string.'
+      'Test: Returns new characters from a new string. Substring(sourceString, startPos, length). startPos cannot be less than 0. A length greater than source strings length will be taken as the max length of the string.'
     ),
   ],
   [
