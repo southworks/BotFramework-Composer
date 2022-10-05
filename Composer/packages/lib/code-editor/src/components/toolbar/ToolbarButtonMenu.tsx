@@ -55,7 +55,7 @@ const templateSvgIcon = (
 
 const defaultTreeItemHeight = 36;
 
-const buttonStyles = { menuIcon: { fontSize: 8, color: FluentTheme.palette.neutralPrimary } };
+const buttonStyles = { menuIcon: { fontSize: 8, color: FluentTheme.palette.blue } };
 const labelContainerStyle: IStackStyles = {
   root: { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', height: defaultTreeItemHeight },
 };

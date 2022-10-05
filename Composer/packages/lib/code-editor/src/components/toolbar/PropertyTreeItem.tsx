@@ -25,7 +25,7 @@ const toggleExpandIconStyle: IIconStyles = {
     fontSize: 8,
     transition: 'background 250ms ease',
     selectors: {
-      '&:hover, &:focus-within': { background: NeutralColors.gray50 },
+      '&:hover, &:focus-within': { background: NeutralColors.black },
       '&:before': {
         content: '""',
       },
