@@ -818,7 +818,7 @@ export const AzureProvisionDialog: React.FC = () => {
               {renderPropertyInfoIcon(formatMessage('The subscription that will be billed for the resources.'))}
             </Stack>
             <Dropdown
-              disabled={currentConfig?.subscriptionId || !subscriptionOptions?.length}
+              disabled={currentConfig?.subscriptionId}
               errorMessage={subscriptionsErrorMessage}
               options={subscriptionOptions}
               placeholder={subscriptionsLoading ? formatMessage('Loading ...') : formatMessage('Select one')}
@@ -898,7 +898,7 @@ export const AzureProvisionDialog: React.FC = () => {
               {renderPropertyInfoIcon(formatMessage('The region where your resources and bot will be used.'))}
             </Stack>
             <Dropdown
-              disabled={currentConfig?.region || !deployLocationOptions?.length}
+              disabled={currentConfig?.region}
               options={deployLocationOptions}
               placeholder={formatMessage('Select one')}
               selectedKey={formData.region}
@@ -922,7 +922,7 @@ export const AzureProvisionDialog: React.FC = () => {
               </LearnMoreLink>
             </Stack>
             <Dropdown
-              disabled={currentConfig?.settings?.luis?.region || !luisLocationOptions?.length}
+              disabled={currentConfig?.settings?.luis?.region}
               options={luisLocationOptions}
               placeholder={formatMessage('Select one')}
               selectedKey={formData.luisLocation}
