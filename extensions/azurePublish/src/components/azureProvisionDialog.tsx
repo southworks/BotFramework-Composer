@@ -127,7 +127,7 @@ const configureResourceDropdownStyles = {
 };
 
 const configureResourceTextFieldStyles = {
-  root: { paddingBottom: '4px', maxWidth: '300px', width: 'auto', flex: 'auto', alignSelf: 'stretch' },
+  root: { paddingBottom: '5px', maxWidth: '300px', width: 'auto', flex: 'auto', alignSelf: 'stretch' },
 };
 
 const configureResourcesIconStyle = {

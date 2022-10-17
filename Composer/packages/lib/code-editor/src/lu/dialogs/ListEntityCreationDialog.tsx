@@ -206,7 +206,7 @@ export const ListEntityCreationDialog = (props: Props) => {
               data-selection-disabled
               autoComplete="off"
               errorMessage={itemsTouched[item.id] ? itemErrors[item.id] : ''}
-              placeholder={formatMessage('Enter a value')}
+              placeholder={formatMessage('Enter a value v2')}
               styles={normalizedValueTextFieldStyles}
               value={item.normalizedValue}
               onChange={changeNormalizedValue(item)}
