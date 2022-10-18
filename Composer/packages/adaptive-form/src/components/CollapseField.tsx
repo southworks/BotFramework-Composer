@@ -5,16 +5,12 @@
 import { css, jsx } from '@emotion/react';
 import { Fragment, useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { FontSizes, FontWeights } from '@fluentui/react/lib/Styling';
+import { IconButton } from '@fluentui/react/lib/Button';
 import { Label } from '@fluentui/react/lib/Label';
 import { NeutralColors } from '@fluentui/theme';
 import formatMessage from 'format-message';
-import { Icon } from '@fluentui/react/lib/Icon';
-import styled from '@emotion/styled';
 
 const styles = {
-  title: css`
-    font-weight: ${FontWeights.semibold};
-  `,
   description: css`
     font-size: ${FontSizes.medium};
   `,
@@ -23,19 +19,12 @@ const styles = {
     overflow: hidden;
   `,
   header: css`
-    appearance: none;
-    border: none;
     background-color: #eff6fc;
     display: flex;
     margin: 4px -18px;
     align-items: center;
   `,
 };
-
-const CollapseIcon = styled(Icon)({
-  color: NeutralColors.gray150,
-  marginRight: '4px',
-});
 
 interface CollapseField {
   defaultExpanded?: boolean;
@@ -48,19 +37,28 @@ export const CollapseField: React.FC<CollapseField> = ({ children, description, 
 
   return (
     <Fragment>
-      <button
+      <div
         data-is-focusable
         aria-expanded={isOpen}
         aria-label={typeof title === 'string' ? title : formatMessage('Field Set')}
         css={styles.header}
+        role="presentation"
         onClick={() => {
           setIsOpen(!isOpen);
         }}
       >
-        <CollapseIcon aria-hidden {...{ iconName: isOpen ? 'ChevronDown' : 'ChevronRight' }} />
-        {title && <Label css={styles.title}>{title}</Label>}
+        <IconButton
+          ariaLabel={isOpen ? formatMessage('Collapse') : formatMessage('Expand')}
+          iconProps={{ iconName: isOpen ? 'ChevronDown' : 'ChevronRight' }}
+          styles={{
+            root: { color: NeutralColors.gray150 },
+            rootHovered: { backgroundColor: 'transparent' },
+            rootFocused: { backgroundColor: 'transparent' },
+          }}
+        />
+        {title && <Label styles={{ root: { fontWeight: FontWeights.semibold } }}>{title}</Label>}
         {description && <span css={styles.description}>&nbsp;- {description}</span>}
-      </button>
+      </div>
       <div>
         <CollapseContent isOpen={isOpen}>{children}</CollapseContent>
       </div>
