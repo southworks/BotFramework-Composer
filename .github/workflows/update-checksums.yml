@@ -42,7 +42,7 @@ jobs:
       - name: Update resources
         uses: test-room-7/action-update-file@v1
         with:
-          file-path: ../extensions/**/yarn-berry.lock
+          file-path: ../extensions/azurePublish/yarn-berry.lock
           commit-msg: Update yarn.berry.lock files
           github-token: ${{ secrets.GITHUB_TOKEN }}
           branch: ceci/test/checksums-updated
