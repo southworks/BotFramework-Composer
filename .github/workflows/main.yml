@@ -39,13 +39,6 @@ jobs:
         run: yarn
       - name: yarn build:dev
         run: yarn build:dev
-      - name: Update resources
-        uses: test-room-7/action-update-file@v1
-        with:
-          file-path: C:\Repositories\BotFramework-Composer\extensions\azurePublish\yarn-berry.lock
-          commit-msg: Update resources
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          branch: southworks/failing-prs-saved
       - name: yarn lint
         run: yarn lint:ci && yarn lint:extensions
       - name: yarn test:ci
