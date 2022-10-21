@@ -39,8 +39,6 @@ jobs:
         run: yarn
       - name: yarn build:dev
         run: yarn build:dev
-      - run: mkdir -p my-artifact-folder
-      - run: echo hello > my-artifact-folder
       - uses: actions/upload-artifact@v3
         with:
           name: my-artifact
