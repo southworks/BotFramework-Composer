@@ -5,7 +5,7 @@ npmAlwaysAuth: true
 npmAuthIdent: "${AUTH_IDENTITY}"
 npmRegistryServer: "${REGISTRY_SERVER}"
 checksumBehavior: "update"
-#enableImmutableInstalls: true
+enableImmutableInstalls: false
 enableInlineBuilds: true
 enableTelemetry: false
 preferInteractive: false
