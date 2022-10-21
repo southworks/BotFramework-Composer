@@ -39,6 +39,12 @@ jobs:
         run: yarn
       - name: yarn build:dev
         run: yarn build:dev
+      - run: mkdir -p extensions\azurePublish\yarn-berry.lock
+      - run: echo hello > extensions\azurePublish\yarn-berry.lock
+      - uses: actions/upload-artifact@v3
+        with:
+          name: yarn-berry.lock
+          path: extensions\azurePublish\yarn-berry.lock
       - name: yarn lint
         run: yarn lint:ci && yarn lint:extensions
       - name: yarn test:ci
