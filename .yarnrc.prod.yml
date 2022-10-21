@@ -4,8 +4,8 @@ yarnPath: ".yarn/releases/yarn-3.2.1.cjs"
 npmAlwaysAuth: true
 npmAuthIdent: "${AUTH_IDENTITY}"
 npmRegistryServer: "${REGISTRY_SERVER}"
-checksumBehavior: "throw"
-enableImmutableInstalls: true
+checksumBehavior: "update"
+#enableImmutableInstalls: true
 enableInlineBuilds: true
 enableTelemetry: false
 preferInteractive: false
