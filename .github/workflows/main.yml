@@ -39,24 +39,17 @@ jobs:
         run: yarn
       - name: yarn build:dev
         run: yarn build:dev
-      - name: Update resources
-        uses: test-room-7/action-update-file@v1
+      - name: yarn lint
+        run: yarn lint:ci && yarn lint:extensions
+      - name: yarn test:ci
+        run: yarn test:ci
+      - name: Coveralls
+        uses: coverallsapp/github-action@v1.1.1
+        continue-on-error: true
         with:
-          file-path: ./extensions/**/yarn-berry.lock
-          commit-msg: Update yarn.berry.lock files
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ceci/test/checksums-updated
-      # - name: yarn lint
-      #   run: yarn lint:ci && yarn lint:extensions
-      # - name: yarn test:ci
-      #   run: yarn test:ci
-      # - name: Coveralls
-      #   uses: coverallsapp/github-action@v1.1.1
-      #   continue-on-error: true
-      #   with:
-      #     github-token: ${{ secrets.GITHUB_TOKEN }}
-      #     path-to-lcov: ./Composer/coverage/lcov.info
-      #     base-path: ./Composer
+          path-to-lcov: ./Composer/coverage/lcov.info
+          base-path: ./Composer
   # docker-build:
   #   name: Docker Build
   #   timeout-minutes: 20
