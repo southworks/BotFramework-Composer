@@ -39,14 +39,20 @@ jobs:
         run: yarn
       - name: yarn build:dev
         run: yarn build:dev
-      - name: Update resources
-        uses: test-room-7/action-update-file@v1
+      - name: Save artifacts
+        uses: actions/upload-artifact@v3
         with:
-          file-path: ../extensions/azurePublish/yarn-berry.lock
-          commit-msg: Update yarn.berry.lock files
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ceci/test/checksums-updated
-          allow-removing: true
+          name: extensions-lock-files
+          path: |
+            ../extensions/azurePublish/*.lock
+      # - name: Update resources
+      #   uses: test-room-7/action-update-file@v1
+      #   with:
+      #     file-path: ../extensions/azurePublish/yarn-berry.lock
+      #     commit-msg: Update yarn.berry.lock files
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     branch: ceci/test/checksums-updated
+      #     allow-removing: true
       # - name: yarn lint
       #   run: yarn lint:ci && yarn lint:extensions
       # - name: yarn test:ci
