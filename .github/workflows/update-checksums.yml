@@ -44,7 +44,7 @@ jobs:
         with:
           name: extensions-lock-files
           path: |
-            ../extensions/azurePublish/*.lock
+            extensions/azurePublish/*.lock
       # - name: Update resources
       #   uses: test-room-7/action-update-file@v1
       #   with:
