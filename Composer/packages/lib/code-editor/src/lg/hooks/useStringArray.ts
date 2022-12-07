@@ -1,4 +1,3 @@
-/* eslint-disable security/detect-unsafe-regex */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
@@ -30,6 +29,13 @@ const getInitialItems = <T extends ArrayBasedStructuredResponseItem>(
 const fixMultilineItems = (items: TemplateBodyItem[]) => {
   return items.map((item) => {
     if (item.kind === 'variation' && /\r?\n/g.test(item.value)) {
+      // if it's a SSML tag, remove the line breaks.
+      if (/^<speak/g.test(item.value.trim())) {
+        return {
+          ...item,
+          value: item.value.replace(/[\r\n]+/g, ''),
+        };
+      }
       return {
         ...item,
         // Escape all un-escaped -
