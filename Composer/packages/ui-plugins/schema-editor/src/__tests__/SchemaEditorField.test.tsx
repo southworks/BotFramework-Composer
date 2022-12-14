@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React from 'react';
 import { EditorExtension } from '@bfc/extension-client';
@@ -61,7 +60,7 @@ describe('Schema Editor', () => {
           properties: expect.objectContaining({
             propertyName: {
               title: 'Property Name',
-              $ref: `${SCHEMA_URI}#/definitions/valueExpression`,
+              type: 'string',
             },
           }),
         }),
