@@ -99,7 +99,7 @@
     "@botframework-composer/types": "file:../../Composer/packages/types",
     "@types/archiver": "5.3.1",
     "@types/fs-extra": "9.0.13",
-    "@types/node": "18.0.3",
+    "@types/node": "15.12.2",
     "@types/react": "^16.9.53",
     "@types/react-dom": "18.0.6",
     "@types/request": "2.48.8",

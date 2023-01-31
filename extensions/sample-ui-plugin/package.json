@@ -70,7 +70,7 @@
     "react-dom": "^16.13.0"
   },
   "devDependencies": {
-    "@types/node": "18.0.3",
+    "@types/node": "15.12.2",
     "@types/react": "^16.9.53",
     "rimraf": "3.0.2",
     "ts-loader": "9.3.1",
