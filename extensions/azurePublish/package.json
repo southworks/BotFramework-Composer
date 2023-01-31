@@ -90,7 +90,8 @@
     "@azure/ms-rest-nodeauth/adal-node": "0.2.4",
     "terser": "^5.14.2",
     "loader-utils": "^2.0.4",
-    "json5": "^2.2.2"
+    "json5": "^2.2.2",
+    "@types/node": "15.12.2"
   },
   "devDependencies": {
     "@babel/plugin-transform-runtime": "7.18.6",
@@ -99,7 +100,6 @@
     "@botframework-composer/types": "file:../../Composer/packages/types",
     "@types/archiver": "5.3.1",
     "@types/fs-extra": "9.0.13",
-    "@types/node": "15.12.2",
     "@types/react": "^16.9.53",
     "@types/react-dom": "18.0.6",
     "@types/request": "2.48.8",
