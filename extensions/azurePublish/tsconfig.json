@@ -7,9 +7,9 @@
       "jest"
     ]
   },
+  "typeAcquisition": { "include": ["jest"] },
   "include": [
-    "src/**/*",
-    "**/*.spec.ts"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",
