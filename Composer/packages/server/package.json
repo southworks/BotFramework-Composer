@@ -109,6 +109,7 @@
     "jwks-rsa": "^1.6.0",
     "lodash": "^4.17.19",
     "luis-apis": "2.5.1",
+    "memorystore": "1.6.7",
     "minimatch": "^3.0.4",
     "moment": "^2.29.1",
     "morgan": "^1.9.1",
