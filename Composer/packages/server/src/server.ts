@@ -40,6 +40,7 @@ import { serverListenHost, serverHostname } from './settings/env';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const session = require('express-session');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
 
 export async function start(electronContext?: ElectronContext): Promise<number | string> {
@@ -56,12 +57,14 @@ export async function start(electronContext?: ElectronContext): Promise<number |
 
   app.use(bodyParser.json({ limit: '50mb' }) as any);
   app.use(bodyParser.urlencoded({ extended: false }) as any);
-  app.use(session({
-    store: new MemoryStore(),
-    secret: 'bot-framework-composer',
-    resave: true,
-    saveUninitialized: false,
-  }));
+  app.use(
+    session({
+      store: new MemoryStore(),
+      secret: 'bot-framework-composer',
+      resave: true,
+      saveUninitialized: false,
+    })
+  );
   app.use(ExtensionContext.passport.initialize());
   app.use(ExtensionContext.passport.session());
 
