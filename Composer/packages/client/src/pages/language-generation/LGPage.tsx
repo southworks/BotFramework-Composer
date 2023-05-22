@@ -3,7 +3,7 @@
 
 /** @jsx jsx */
 import { jsx } from '@emotion/react';
-import React, { Fragment, useCallback, Suspense, useEffect } from 'react';
+import React, { Fragment, useCallback, Suspense, useEffect, useState } from 'react';
 import formatMessage from 'format-message';
 import { ActionButton } from '@fluentui/react/lib/Button';
 import { RouteComponentProps, Router } from '@reach/router';
@@ -12,10 +12,11 @@ import { useRecoilValue } from 'recoil';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { navigateTo } from '../../utils/navigation';
 import { Page } from '../../components/Page';
-import { lgFilesSelectorFamily, localeState } from '../../recoilModel';
+import { localeState } from '../../recoilModel';
 import TelemetryClient from '../../telemetry/TelemetryClient';
 
 import TableView from './table-view';
+import lgWorker from '../../recoilModel/parsers/lgWorker';
 const CodeEditor = React.lazy(() => import('./code-editor'));
 
 const LGPage: React.FC<RouteComponentProps<{
@@ -26,23 +27,29 @@ const LGPage: React.FC<RouteComponentProps<{
 }>> = (props) => {
   const { dialogId = '', projectId = '', skillId, lgFileId = '' } = props;
   const actualProjectId = skillId ?? projectId;
+  const [activeFile, setActiveFile] = useState();
   const locale = useRecoilValue(localeState(actualProjectId));
-  const lgFiles = useRecoilValue(lgFilesSelectorFamily(skillId ?? projectId));
+
   const path = props.location?.pathname ?? '';
 
   const edit = /\/edit(\/)?$/.test(path);
 
   const baseURL = skillId == null ? `/bot/${projectId}/` : `/bot/${projectId}/skill/${skillId}/`;
 
-  const activeFile = lgFileId
-    ? lgFiles.find(({ id }) => id === lgFileId || id === `${lgFileId}.${locale}`)
-    : lgFiles.find(({ id }) => id === dialogId || id === `${dialogId}.${locale}`);
+  const getLgFileId = () => (lgFileId ? `${lgFileId}.${locale}` : `${dialogId}.${locale}`);
 
   useEffect(() => {
-    if (!activeFile && lgFiles.length) {
-      navigateTo(`${baseURL}language-generation/common`);
-    }
-  }, [dialogId, lgFiles, projectId, lgFileId]);
+    (async () => {
+      const id = getLgFileId();
+      const lgFile = await lgWorker.get(projectId, id);
+      console.log('lgpage: ', lgFile);
+      const commonPath = `${baseURL}language-generation/common`;
+      if (!lgFile && path !== commonPath) {
+        navigateTo(commonPath);
+      }
+      setActiveFile(lgFile);
+    })();
+  }, [actualProjectId, getLgFileId, activeFile]);
 
   const onToggleEditMode = useCallback(
     (_e) => {

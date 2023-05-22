@@ -26,6 +26,7 @@ const filterParseResult = (lgFile: LgFile) => {
 export const handleMessage = (msg: LgMessageEvent) => {
   const { id, content, lgFiles } = msg.payload;
   const lgFile = lgUtil.parse(id, content, lgFiles);
+  console.log(id)
   return filterParseResult(lgFile);
 };
 

@@ -30,6 +30,9 @@ const router: Router = express.Router({});
 router.get('/extensions/settings/schema.json', ExtensionsController.getSettingsSchema);
 router.get('/extensions/:id/:bundleId', ExtensionsController.getBundleForView);
 
+// Process .lg files.
+router.post('/projects/:projectId/parse/lg-file', ProjectController.parseLgFiles);
+
 router.use(csrfProtection);
 
 // Routes bellow are CSRF protected

@@ -45,13 +45,13 @@ export const useActionApi = (projectId: string) => {
     return await deserializeLgTemplate(lgFileId, toId, lgText, hostActionData, hostFieldName, addLgTemplate);
   };
 
-  const readLgTemplate = (lgText: string, fromId: string) => {
+  const readLgTemplate = async (lgText: string, fromId: string) => {
     if (!lgText) return '';
 
     const inputLgRef = LgTemplateRef.parse(lgText);
     if (!inputLgRef) return lgText;
 
-    const lgTemplates = getLgTemplates(inputLgRef.name);
+    const lgTemplates = await getLgTemplates(inputLgRef.name);
     if (!Array.isArray(lgTemplates) || !lgTemplates.length) return lgText;
 
     const serializedLg = serializeLgTemplate(inputLgRef.name, fromId, lgText, lgTemplates);

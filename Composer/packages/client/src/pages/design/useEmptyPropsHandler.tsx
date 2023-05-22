@@ -12,8 +12,6 @@ import {
   dispatcherState,
   currentDialogState,
   localeState,
-  lgFileState,
-  lgFilesSelectorFamily,
   luFileState,
   qnaFileState,
   settingsState,
@@ -41,16 +39,12 @@ export const useEmptyPropsHandler = (
   const currentDialog = useRecoilValue(currentDialogState({ dialogId, projectId: activeBot }));
   const locale = useRecoilValue(localeState(activeBot));
   const settings = useRecoilValue(settingsState(activeBot));
-  const [currentLg, setCurrentLg] = useRecoilState(
-    lgFileState({ projectId: activeBot, lgFileId: `${dialogId}.${locale}` })
-  );
   const [currentLu, setCurrentLu] = useRecoilState(
     luFileState({ projectId: activeBot, luFileId: `${dialogId}.${locale}` })
   );
   const [currentQna, setCurrentQna] = useRecoilState(
     qnaFileState({ projectId: activeBot, qnaFileId: `${dialogId}.${locale}` })
   );
-  const lgFiles = useRecoilValue(lgFilesSelectorFamily(projectId));
   const luFiles = useRecoilValue(luFilesSelectorFamily(projectId));
   const { updateDialog, setDesignPageLocation, navTo } = useRecoilValue(dispatcherState);
 
@@ -66,20 +60,20 @@ export const useEmptyPropsHandler = (
     }
   }, [currentDialog]);
 
-  useEffect(() => {
-    if (!currentDialog || !currentLg.id) return;
-    let isMounted = true;
-    if (currentLg.isContentUnparsed) {
-      //for current dialog, check the lg file to make sure the file is parsed.
-      lgDiagnosticWorker.parse(activeBot, currentLg.id, currentLg.content, lgFiles).then((result) => {
-        isMounted ? setCurrentLg(result as LgFile) : null;
-      });
-    }
+  // useEffect(() => {
+  //   if (!currentDialog || !currentLg.id) return;
+  //   let isMounted = true;
+  //   if (currentLg.isContentUnparsed) {
+  //     //for current dialog, check the lg file to make sure the file is parsed.
+  //     lgDiagnosticWorker.parse(activeBot, currentLg.id, currentLg.content, lgFiles).then((result) => {
+  //       isMounted ? setCurrentLg(result as LgFile) : null;
+  //     });
+  //   }
 
-    return () => {
-      isMounted = false;
-    };
-  }, [currentDialog, currentLg, lgFiles]);
+  //   return () => {
+  //     isMounted = false;
+  //   };
+  // }, [currentDialog, currentLg, lgFiles]);
 
   useEffect(() => {
     if (!currentDialog || !currentLu.id) return;

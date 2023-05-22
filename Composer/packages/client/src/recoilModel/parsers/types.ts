@@ -103,6 +103,11 @@ export interface LgCleanCachePayload {
   projectId: string;
 }
 
+export type LgGetlPayload = {
+  id: string;
+  projectId: string;
+};
+
 export type LgParseAllPayload = {
   projectId: string;
   lgResources: TextFile[];
@@ -154,6 +159,7 @@ export enum LgActionType {
   RemoveAllTemplates = 'remove-all-templates',
   CopyTemplate = 'copy-template',
   ParseAll = 'parse-all',
+  Get = 'get',
 }
 
 export enum IndexerActionType {

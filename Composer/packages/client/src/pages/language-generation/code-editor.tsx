@@ -5,7 +5,7 @@
 /** @jsx jsx */
 import { EditorDidMount, LgCodeEditor } from '@bfc/code-editor';
 import { LgFile } from '@bfc/extension-client';
-import { filterTemplateDiagnostics } from '@bfc/indexers';
+import { filterTemplateDiagnostics, lgUtil } from '@bfc/indexers';
 import { CodeEditorSettings } from '@bfc/shared';
 import { jsx } from '@emotion/react';
 import { RouteComponentProps } from '@reach/router';
@@ -18,10 +18,10 @@ import { useRecoilValue } from 'recoil';
 import { dispatcherState, userSettingsState } from '../../recoilModel';
 import { dialogState, localeState, settingsState } from '../../recoilModel/atoms/botState';
 import { getMemoryVariables } from '../../recoilModel/dispatchers/utils/project';
-import { lgFilesSelectorFamily } from '../../recoilModel/selectors/lg';
 import TelemetryClient from '../../telemetry/TelemetryClient';
 import { navigateTo } from '../../utils/navigation';
 import { DiffCodeEditor } from '../language-understanding/diff-editor';
+import lgWorker from '../../recoilModel/parsers/lgWorker';
 
 const lspServerPath = '/lg-language-server';
 
@@ -39,7 +39,6 @@ const CodeEditor: React.FC<CodeEditorProps> = (props) => {
 
   const userSettings = useRecoilValue(userSettingsState);
   const locale = useRecoilValue(localeState(actualProjectId));
-  const lgFiles = useRecoilValue(lgFilesSelectorFamily(actualProjectId));
   const settings = useRecoilValue(settingsState(actualProjectId));
   const currentDialog = useRecoilValue(dialogState({ projectId: actualProjectId, dialogId }));
 
@@ -52,14 +51,11 @@ const CodeEditor: React.FC<CodeEditorProps> = (props) => {
     setLocale,
   } = useRecoilValue(dispatcherState);
 
-  const defaultLangFile = lgFileId
-    ? lgFiles.find(({ id }) => id === lgFileId)
-    : lgFiles.find(({ id }) => id === `${dialogId}.${defaultLanguage}`);
-
   const diagnostics = get(file, 'diagnostics', []);
   const [errorMsg, setErrorMsg] = useState('');
   const [lgEditor, setLgEditor] = useState<any>(null);
   const [memoryVariables, setMemoryVariables] = useState<string[] | undefined>();
+  const [defaultLangContent, setDefaultLangContent] = useState();
 
   const search = props.location?.search ?? '';
   const searchTemplateName = querystring.parse(search).t;
@@ -76,9 +72,6 @@ const CodeEditor: React.FC<CodeEditorProps> = (props) => {
 
   const inlineMode = !!template;
   const content = template?.body || file?.content;
-  const defaultLangContent =
-    (inlineMode && defaultLangFile?.templates.find(({ name }) => name === templateId)?.body) ||
-    defaultLangFile?.content;
 
   const currentDiagnostics =
     inlineMode && file && template ? filterTemplateDiagnostics(file, template.name) : diagnostics;
@@ -86,6 +79,19 @@ const CodeEditor: React.FC<CodeEditorProps> = (props) => {
   const editorDidMount: EditorDidMount = (_getValue, lgEditor) => {
     setLgEditor(lgEditor);
   };
+
+  const getLgFileId = () => lgFileId || `${dialogId}.${defaultLanguage}`;
+
+  useEffect(() => {
+    (async () => {
+      const id = getLgFileId();
+      const lgFile = await lgWorker.get(projectId, id);
+      console.log('code-editor: ' + lgFile);
+      const defaultLangContent =
+        (inlineMode && lgFile?.templates.find(({ name }) => name === templateId)?.body) || lgFile?.content;
+      setDefaultLangContent(defaultLangContent);
+    })();
+  }, [actualProjectId, getLgFileId, defaultLangContent]);
 
   useEffect(() => {
     const abortController = new AbortController();

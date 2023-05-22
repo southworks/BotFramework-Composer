@@ -26,8 +26,8 @@ import { actionButton, editableFieldContainer } from '../language-understanding/
 import { dispatcherState, localeState, settingsState, dialogsSelectorFamily } from '../../recoilModel';
 import { languageListTemplates } from '../../components/MultiLanguage';
 import TelemetryClient from '../../telemetry/TelemetryClient';
-import { lgFilesSelectorFamily } from '../../recoilModel/selectors/lg';
 import { CellFocusZone } from '../../components/CellFocusZone';
+import lgWorker from '../../recoilModel/parsers/lgWorker';
 
 interface TableViewProps extends RouteComponentProps<{ dialogId: string; skillId: string; projectId: string }> {
   projectId: string;
@@ -42,7 +42,6 @@ const TableView: React.FC<TableViewProps> = (props) => {
 
   const actualProjectId = skillId ?? projectId;
 
-  const lgFiles = useRecoilValue(lgFilesSelectorFamily(actualProjectId));
   const locale = useRecoilValue(localeState(actualProjectId));
   const settings = useRecoilValue(settingsState(actualProjectId));
   const dialogs = useRecoilValue(dialogsSelectorFamily(actualProjectId));
@@ -52,14 +51,22 @@ const TableView: React.FC<TableViewProps> = (props) => {
 
   const { languages, defaultLanguage } = settings;
 
-  const defaultLangFile = lgFileId
-    ? lgFiles.find(({ id }) => id === lgFileId)
-    : lgFiles.find(({ id }) => id === `${dialogId}.${defaultLanguage}`);
-
   const [templates, setTemplates] = useState<LgTemplate[]>([]);
+  const [defaultLangFile, setDefaultLangFile] = useState();
   const listRef = useRef(null);
 
   const activeDialog = dialogs.find(({ id }) => id === dialogId);
+
+  const getLgFileId = () => (lgFileId || `${dialogId}.${defaultLanguage}`);
+
+  useEffect(() => {
+    (async () => {
+      const id = getLgFileId();
+      const lgFile = await lgWorker.get(projectId, id);
+      console.log('table-view: ', lgFile);
+      setDefaultLangFile(lgFile);
+    })();
+  }, [actualProjectId, getLgFileId, defaultLangFile]);
 
   useEffect(() => {
     if (!file || isEmpty(file)) return;

@@ -12,6 +12,7 @@ import { dispatcherState } from '../atoms';
 
 import { setError } from './shared';
 import LgWorker from './../parsers/lgWorker';
+// import { cache as LgWorkerCache } from './../parsers/workers/lgParser.worker';
 import LgDiagnosticWorker from './../parsers/lgDiagnosticWorker';
 import { lgFileIdsState, lgFileState, localeState, settingsState } from './../atoms/botState';
 
@@ -145,21 +146,21 @@ export const createLgFileState = async (
 ) => {
   try {
     const { snapshot } = callbackHelpers;
-    const lgFiles = await snapshot.getPromise(lgFilesSelectorFamily(projectId));
     const locale = await snapshot.getPromise(localeState(projectId));
     const { languages } = await snapshot.getPromise(settingsState(projectId));
     const createdLgId = `${id}.${locale}`;
-    if (lgFiles.find((lg) => lg.id === createdLgId)) {
+    const lgFile = await LgWorker.get(projectId, createdLgId);
+    if (lgFile) {
       throw new Error(formatMessage('lg file already exist'));
     }
     // slot with common.lg import
     let lgInitialContent = '';
-    const lgCommonFile = lgFiles.find(({ id }) => id === `common.${locale}`);
+    const lgCommonFile = await LgWorker.get(projectId, `common.${locale}`);
     if (lgCommonFile) {
       lgInitialContent = `[import](common.lg)`;
     }
     content = [lgInitialContent, content].join('\n');
-    const createdLgFile = (await LgWorker.parse(projectId, createdLgId, content, lgFiles)) as LgFile;
+    const createdLgFile = (await LgWorker.parse(projectId, createdLgId, content)) as LgFile;
     const changes: LgFile[] = [];
 
     // copy to other locales
@@ -181,10 +182,9 @@ export const removeLgFileState = async (
   { id, projectId }: { id: string; projectId: string }
 ) => {
   const { snapshot } = callbackHelpers;
-  const lgFiles = await snapshot.getPromise(lgFilesSelectorFamily(projectId));
   const locale = await snapshot.getPromise(localeState(projectId));
 
-  const targetLgFile = lgFiles.find((item) => item.id === id) || lgFiles.find((item) => item.id === `${id}.${locale}`);
+  const targetLgFile = (await LgWorker.get(projectId, id)) ?? LgWorker.get(projectId, `${id}.${locale}`);
   if (!targetLgFile) {
     setError(callbackHelpers, new Error(`remove lg file ${id} not exist`));
     return;
@@ -239,9 +239,10 @@ export const lgDispatcher = () => {
         });
 
         const lgFiles = await snapshot.getPromise(lgFilesSelectorFamily(projectId));
-        const updatedFile = (await LgWorker.parse(projectId, id, content, lgFiles)) as LgFile;
-        const updatedFiles = await getRelatedLgFileChanges(projectId, lgFiles, updatedFile);
+        const updatedFile = (await LgWorker.parse(projectId, id, content)) as LgFile;
 
+        // const lgFiles = await LgWorkerCache.getMany(projectId); // TODO: find a way to put it into getRelatedLgFileChanges using the filter param
+        const updatedFiles = await getRelatedLgFileChanges(projectId, lgFiles, updatedFile);
         // compare to drop expired change on current id lg file.
         /**
          * Why other methods do not need double check content?
