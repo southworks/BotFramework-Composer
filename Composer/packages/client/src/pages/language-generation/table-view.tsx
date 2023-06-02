@@ -16,18 +16,19 @@ import formatMessage from 'format-message';
 import { NeutralColors, FontSizes } from '@fluentui/theme';
 import { RouteComponentProps } from '@reach/router';
 import { LgTemplate } from '@bfc/shared';
-import { useRecoilValue } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
 import { lgUtil } from '@bfc/indexers';
 import { LgFile } from '@botframework-composer/types/src';
 
 import { EditableField } from '../../components/EditableField';
 import { navigateTo } from '../../utils/navigation';
 import { actionButton, editableFieldContainer } from '../language-understanding/styles';
-import { dispatcherState, localeState, settingsState, dialogsSelectorFamily } from '../../recoilModel';
+import { dispatcherState, localeState, settingsState, dialogsSelectorFamily, lgFileState } from '../../recoilModel';
 import { languageListTemplates } from '../../components/MultiLanguage';
 import TelemetryClient from '../../telemetry/TelemetryClient';
 import { lgFilesSelectorFamily } from '../../recoilModel/selectors/lg';
 import { CellFocusZone } from '../../components/CellFocusZone';
+import lgWorker from '../../recoilModel/parsers/lgWorker';
 
 interface TableViewProps extends RouteComponentProps<{ dialogId: string; skillId: string; projectId: string }> {
   projectId: string;
@@ -49,21 +50,54 @@ const TableView: React.FC<TableViewProps> = (props) => {
   const { createLgTemplate, copyLgTemplate, removeLgTemplate, setMessage, updateLgTemplate } = useRecoilValue(
     dispatcherState
   );
-
   const { languages, defaultLanguage } = settings;
+  const [defaultLg, setDefaultLg] = useRecoilState(
+    lgFileState({ projectId: actualProjectId, lgFileId: `${dialogId}.${defaultLanguage}` })
+  );
 
-  const defaultLangFile = lgFileId
-    ? lgFiles.find(({ id }) => id === lgFileId)
-    : lgFiles.find(({ id }) => id === `${dialogId}.${defaultLanguage}`);
+  const getDefaultLangFile = () => {
+    let file: LgFile | undefined;
+    console.log('table-view-activeFile');
+    if (lgFileId) {
+      file = lgFiles.find(({ id }) => id === lgFileId);
+    } else {
+      file = lgFiles.find(({ id }) => id === `${dialogId}.${defaultLanguage}`);
+    }
+    console.log('file?.isContentUnparsed: ' + file?.isContentUnparsed);
+    if (file?.isContentUnparsed) {
+      //parse, set and return
+      lgWorker.parse(actualProjectId, defaultLg.id, defaultLg.content, lgFiles).then((result) => {
+        setDefaultLg(result as LgFile);
+        console.log('parsed lg: ' + defaultLg.id);
+        return defaultLg;
+      });
+    }
+    console.log('lg: ' + file?.id);
+    return file;
+  };
+
+  // const defaultLangFile = lgFileId
+  //   ? lgFiles.find(({ id }) => id === lgFileId)
+  //   : lgFiles.find(({ id }) => id === `${dialogId}.${defaultLanguage}`);
+
+  const defaultLangFile = getDefaultLangFile();
 
   const [templates, setTemplates] = useState<LgTemplate[]>([]);
   const listRef = useRef(null);
 
   const activeDialog = dialogs.find(({ id }) => id === dialogId);
+  console.log('activeDialog: ' + activeDialog?.id);
 
   useEffect(() => {
     if (!file || isEmpty(file)) return;
-
+    console.log(
+      'useEffect-setTemplates - activeDialog: ' +
+        activeDialog?.id +
+        ' file: ' +
+        file.id +
+        'file.templates: ' +
+        file.templates?.length
+    );
     setTemplates(file.templates);
   }, [file, activeDialog, actualProjectId]);
 

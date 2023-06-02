@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 import { lgUtil } from '@bfc/indexers';
-import { lgImportResolverGenerator, LgFile } from '@bfc/shared';
+import { lgImportResolverGenerator, LgFile, TextFile } from '@bfc/shared';
 
 import {
   LgActionType,
@@ -112,9 +112,11 @@ export class LgCache {
 
     if (!lgResources) return;
 
+    console.log('lgCache-set: value.id: ' + value.id + ' value: ' + value);
     lgResources.set(value.id, value);
+    console.log('lgResources.set done');
 
-    // update reference resource
+    //update reference resource
     const updatedResource = value.parseResult;
     lgResources.forEach((lgResource) => {
       if (lgResource.parseResult) {
@@ -125,10 +127,14 @@ export class LgCache {
     });
 
     this.projects.set(projectId, lgResources);
+    console.log('this.projects.set done');
   }
 
   public get(projectId: string, fileId: string) {
-    return this.projects.get(projectId)?.get(fileId);
+    console.log('lgCache-get fileId: ' + fileId);
+    const file = this.projects.get(projectId)?.get(fileId);
+    console.log('lgCache-get: file.id: ' + file?.id + ' file: ' + file);
+    return file;
   }
 
   public removeProject(projectId: string) {
@@ -153,14 +159,38 @@ const filterParseResult = (lgFile: LgFile) => {
   return cloned;
 };
 
-const getTargetFile = (projectId: string, lgFile: LgFile) => {
+const getTargetFile = (projectId: string, lgFile: LgFile, lgFiles: LgFile[]) => {
+  console.log('getTargetFile');
   const cachedFile = cache.get(projectId, lgFile.id);
+
+  if (cachedFile?.isContentUnparsed) {
+    console.log('isContentUnparsed');
+    //parse content, set and return
+    const lgFile = lgUtil.parse(cachedFile.id, cachedFile.content, lgFiles);
+    lgFile.isContentUnparsed = false;
+    console.log('going to set file: ' + lgFile.id + lgFile.isContentUnparsed);
+    cache.set(projectId, lgFile);
+    return filterParseResult(lgFile);
+  }
 
   // Instead of compare content, just use cachedFile as single truth of fact, because all updates are supposed to be happen in worker, and worker will always update cache.
   return cachedFile ?? lgFile;
 };
 
+const emptyLgFile = (id: string, content: string): LgFile => {
+  return {
+    id,
+    content,
+    diagnostics: [],
+    templates: [],
+    allTemplates: [],
+    imports: [],
+    isContentUnparsed: true,
+  };
+};
+
 export const handleMessage = (msg: LgMessageEvent) => {
+  console.log('handle Message: ' + msg.type);
   let payload: any = null;
   switch (msg.type) {
     case LgActionType.NewCache: {
@@ -188,9 +218,13 @@ export const handleMessage = (msg: LgMessageEvent) => {
       const { lgResources, projectId } = msg.payload;
 
       payload = lgResources.map(({ id, content }) => {
-        const lgFile = lgUtil.parse(id, content, lgResources);
-        cache.set(projectId, lgFile);
-        return filterParseResult(lgFile);
+        //payload = lgResources.map((txtFile) => {
+        //const lgFile = lgUtil.parse(id, content, lgResources);
+        //cache.set(projectId, lgFile);
+        const emptyLg = emptyLgFile(id, content);
+        cache.set(projectId, emptyLg);
+        //return filterParseResult(lgFile);
+        return filterParseResult(emptyLg);
       });
 
       break;
@@ -198,7 +232,7 @@ export const handleMessage = (msg: LgMessageEvent) => {
 
     case LgActionType.AddTemplate: {
       const { lgFile, template, lgFiles, projectId } = msg.payload;
-      const result = lgUtil.addTemplate(getTargetFile(projectId, lgFile), template, lgFileResolver(lgFiles));
+      const result = lgUtil.addTemplate(getTargetFile(projectId, lgFile, lgFiles), template, lgFileResolver(lgFiles));
       cache.set(projectId, result);
       payload = filterParseResult(result);
       break;
@@ -206,7 +240,7 @@ export const handleMessage = (msg: LgMessageEvent) => {
 
     case LgActionType.AddTemplates: {
       const { lgFile, templates, lgFiles, projectId } = msg.payload;
-      const result = lgUtil.addTemplates(getTargetFile(projectId, lgFile), templates, lgFileResolver(lgFiles));
+      const result = lgUtil.addTemplates(getTargetFile(projectId, lgFile, lgFiles), templates, lgFileResolver(lgFiles));
       cache.set(projectId, result);
       payload = filterParseResult(result);
       break;
@@ -215,7 +249,7 @@ export const handleMessage = (msg: LgMessageEvent) => {
     case LgActionType.UpdateTemplate: {
       const { lgFile, templateName, template, lgFiles, projectId } = msg.payload;
       const result = lgUtil.updateTemplate(
-        getTargetFile(projectId, lgFile),
+        getTargetFile(projectId, lgFile, lgFiles),
         templateName,
         template,
         lgFileResolver(lgFiles)
@@ -227,7 +261,11 @@ export const handleMessage = (msg: LgMessageEvent) => {
 
     case LgActionType.RemoveTemplate: {
       const { lgFile, templateName, lgFiles, projectId } = msg.payload;
-      const result = lgUtil.removeTemplate(getTargetFile(projectId, lgFile), templateName, lgFileResolver(lgFiles));
+      const result = lgUtil.removeTemplate(
+        getTargetFile(projectId, lgFile, lgFiles),
+        templateName,
+        lgFileResolver(lgFiles)
+      );
       cache.set(projectId, result);
       payload = filterParseResult(result);
       break;
@@ -235,7 +273,11 @@ export const handleMessage = (msg: LgMessageEvent) => {
 
     case LgActionType.RemoveAllTemplates: {
       const { lgFile, templateNames, lgFiles, projectId } = msg.payload;
-      const result = lgUtil.removeTemplates(getTargetFile(projectId, lgFile), templateNames, lgFileResolver(lgFiles));
+      const result = lgUtil.removeTemplates(
+        getTargetFile(projectId, lgFile, lgFiles),
+        templateNames,
+        lgFileResolver(lgFiles)
+      );
       cache.set(projectId, result);
       payload = filterParseResult(result);
       break;
@@ -244,7 +286,7 @@ export const handleMessage = (msg: LgMessageEvent) => {
     case LgActionType.CopyTemplate: {
       const { lgFile, toTemplateName, fromTemplateName, lgFiles, projectId } = msg.payload;
       const result = lgUtil.copyTemplate(
-        getTargetFile(projectId, lgFile),
+        getTargetFile(projectId, lgFile, lgFiles),
         fromTemplateName,
         toTemplateName,
         lgFileResolver(lgFiles)

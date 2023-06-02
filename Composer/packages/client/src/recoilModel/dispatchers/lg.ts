@@ -112,6 +112,7 @@ export const getRelatedLgFileChanges = async (
   // sync add/remove templates
   if (onlyAdds || onlyDeletes) {
     for (const file of sameIdOtherLocaleFiles) {
+      console.log('getRelatedLgFileChanges -> addTemplates');
       let newLgFile = (await LgWorker.addTemplates(projectId, file, addedTemplates, lgFiles)) as LgFile;
       newLgFile = (await LgWorker.removeTemplates(
         projectId,
@@ -364,6 +365,7 @@ export const lgDispatcher = () => {
         const lgFiles = await snapshot.getPromise(lgFilesSelectorFamily(projectId));
         const lgFile = lgFiles.find((file) => file.id === id);
         if (!lgFile) return lgFiles;
+        console.log('createLgTemplates -> addTemplates');
         const updatedFile = (await LgWorker.addTemplates(projectId, lgFile, templates, lgFiles)) as LgFile;
         const updatedFiles = await getRelatedLgFileChanges(projectId, lgFiles, updatedFile);
         updateLgFiles(callbackHelpers, projectId, { updates: updatedFiles });

@@ -101,9 +101,9 @@ const repairBotProject = async (projectId: string, snapshot: Snapshot, previousS
     const dialogs = await snapshot.getPromise(dialogsSelectorFamily(projectId));
     const lgFiles = await snapshot.getPromise(lgFilesSelectorFamily(projectId));
 
-    const updatedLgFiles = await createMissingLgTemplatesForDialogs(projectId, dialogs, lgFiles);
-    const { updateAllLgFiles } = await snapshot.getPromise(dispatcherState);
-    updateAllLgFiles({ projectId, lgFiles: updatedLgFiles });
+    //const updatedLgFiles = await createMissingLgTemplatesForDialogs(projectId, dialogs, lgFiles);
+    //const { updateAllLgFiles } = await snapshot.getPromise(dispatcherState);
+    //updateAllLgFiles({ projectId, lgFiles: updatedLgFiles });
   }
 };
 
