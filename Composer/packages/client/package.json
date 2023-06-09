@@ -57,6 +57,7 @@
     "babel-plugin-extract-format-message": "^6.2.3",
     "botframework-webchat": "^4.15.6",
     "botframework-webchat-core": "^4.15.6",
+    "dexie": "3.2.3",
     "format-message": "6.2.4",
     "format-message-generate-id": "^6.2.3",
     "immer": "^9.0.6",

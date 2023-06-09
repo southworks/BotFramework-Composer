@@ -26,11 +26,13 @@ const emotionCache = createCache({
 const renderApp = (AppComponent: typeof App) => {
   ReactDOM.render(
     <RecoilRoot>
-      <CacheProvider value={emotionCache}>
-        <DispatcherWrapper>
-          <AppComponent />
-        </DispatcherWrapper>
-      </CacheProvider>
+      <React.Suspense fallback={<div>Loading...</div>}>
+        <CacheProvider value={emotionCache}>
+          <DispatcherWrapper>
+            <AppComponent />
+          </DispatcherWrapper>
+        </CacheProvider>
+      </React.Suspense>
     </RecoilRoot>,
     appHostElm
   );

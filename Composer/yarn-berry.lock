@@ -3686,6 +3686,7 @@ __metadata:
     browserslist: ^4.16.5
     case-sensitive-paths-webpack-plugin: 2.2.0
     css-loader: 3.2.0
+    dexie: 3.2.3
     dotenv: 6.0.0
     dotenv-expand: 4.2.0
     esbuild-loader: ^2.8.0
@@ -13168,6 +13169,13 @@ __metadata:
     detect: ./bin/detect-port
     detect-port: ./bin/detect-port
   checksum: 9dc37b1fa4a9dd6d4889e1045849b8d841232b598d1ca888bf712f4035b07a17cf6d537465a0d7323250048d3a5a0540e3b7cf89457efc222f96f77e2c40d16a
+  languageName: node
+  linkType: hard
+
+"dexie@npm:3.2.3":
+  version: 3.2.3
+  resolution: "dexie@npm:3.2.3"
+  checksum: 54fd7bc94364ed601dc2d53f8b488e49ac61d4ec532f001a68fde9ffccb4bf3c6a8af310b41d8f52c94c1a99c0e165437d7b223b655df582ceda90b9bfcd60e7
   languageName: node
   linkType: hard
 

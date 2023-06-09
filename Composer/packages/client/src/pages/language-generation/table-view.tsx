@@ -51,36 +51,37 @@ const TableView: React.FC<TableViewProps> = (props) => {
     dispatcherState
   );
   const { languages, defaultLanguage } = settings;
-  const [defaultLg, setDefaultLg] = useRecoilState(
-    lgFileState({ projectId: actualProjectId, lgFileId: `${dialogId}.${defaultLanguage}` })
-  );
+  const [defaultLangFile, setDefaultLangFile] = useState();
+  // const [defaultLg, setDefaultLg] = useRecoilState(
+  //   lgFileState({ projectId: actualProjectId, lgFileId: `${dialogId}.${defaultLanguage}` })
+  // );
 
-  const getDefaultLangFile = () => {
-    let file: LgFile | undefined;
-    console.log('table-view-activeFile');
-    if (lgFileId) {
-      file = lgFiles.find(({ id }) => id === lgFileId);
-    } else {
-      file = lgFiles.find(({ id }) => id === `${dialogId}.${defaultLanguage}`);
-    }
-    console.log('file?.isContentUnparsed: ' + file?.isContentUnparsed);
-    if (file?.isContentUnparsed) {
-      //parse, set and return
-      lgWorker.parse(actualProjectId, defaultLg.id, defaultLg.content, lgFiles).then((result) => {
-        setDefaultLg(result as LgFile);
-        console.log('parsed lg: ' + defaultLg.id);
-        return defaultLg;
-      });
-    }
-    console.log('lg: ' + file?.id);
-    return file;
-  };
+  // const getDefaultLangFile = () => {
+  //   let file: LgFile | undefined;
+  //   console.log('table-view-activeFile');
+  //   if (lgFileId) {
+  //     file = lgFiles.find(({ id }) => id === lgFileId);
+  //   } else {
+  //     file = lgFiles.find(({ id }) => id === `${dialogId}.${defaultLanguage}`);
+  //   }
+  //   console.log('file?.isContentUnparsed: ' + file?.isContentUnparsed);
+  //   if (file?.isContentUnparsed) {
+  //     //parse, set and return
+  //     lgWorker.parse(actualProjectId, defaultLg.id, defaultLg.content, lgFiles).then((result) => {
+  //       setDefaultLg(result as LgFile);
+  //       console.log('parsed lg: ' + defaultLg.id);
+  //       return defaultLg;
+  //     });
+  //   }
+  //   console.log('lg: ' + file?.id);
+  //   return file;
+  // };
 
   // const defaultLangFile = lgFileId
   //   ? lgFiles.find(({ id }) => id === lgFileId)
   //   : lgFiles.find(({ id }) => id === `${dialogId}.${defaultLanguage}`);
 
-  const defaultLangFile = getDefaultLangFile();
+  //const defaultLangFile = getDefaultLangFile();
 
   const [templates, setTemplates] = useState<LgTemplate[]>([]);
   const listRef = useRef(null);
@@ -88,16 +89,27 @@ const TableView: React.FC<TableViewProps> = (props) => {
   const activeDialog = dialogs.find(({ id }) => id === dialogId);
   console.log('activeDialog: ' + activeDialog?.id);
 
+  const getLgFileId = () =>
+    lgFileId
+      ? lgFiles.find(({ id }) => id === lgFileId)
+      : lgFiles.find(({ id }) => id === `${dialogId}.${defaultLanguage}`);
+
+  useEffect(() => {
+    (async () => {
+      const file = getLgFileId();
+      if (file?.isContentUnparsed) {
+        //parse, set and return
+        const lgFile = await lgWorker.parse(actualProjectId, file.id, file.content, lgFiles);
+        console.log('table-view: ', lgFile);
+        setDefaultLangFile(lgFile);
+      } else {
+        setDefaultLangFile(file as any);
+      }
+    })();
+  }, [dialogId, lgFiles, actualProjectId, lgFileId]);
+
   useEffect(() => {
     if (!file || isEmpty(file)) return;
-    console.log(
-      'useEffect-setTemplates - activeDialog: ' +
-        activeDialog?.id +
-        ' file: ' +
-        file.id +
-        'file.templates: ' +
-        file.templates?.length
-    );
     setTemplates(file.templates);
   }, [file, activeDialog, actualProjectId]);
 

@@ -196,24 +196,26 @@ const CodeEditor: React.FC<CodeEditorProps> = (props) => {
 
   const currentLanguageFileEditor = useMemo(() => {
     return (
-      <LgCodeEditor
-        diagnostics={currentDiagnostics}
-        editorDidMount={editorDidMount}
-        editorSettings={userSettings.codeEditor}
-        errorMessage={errorMsg}
-        hidePlaceholder={inlineMode}
-        languageServer={{
-          path: lspServerPath,
-        }}
-        lgOption={lgOption}
-        lgTemplates={file?.allTemplates}
-        memoryVariables={memoryVariables}
-        telemetryClient={TelemetryClient}
-        value={content}
-        onChange={onChange}
-        onChangeSettings={handleSettingsChange}
-        onNavigateToLgPage={navigateToLgPage}
-      />
+      <React.Suspense fallback={<div>Loading...</div>}>
+        <LgCodeEditor
+          diagnostics={currentDiagnostics}
+          editorDidMount={editorDidMount}
+          editorSettings={userSettings.codeEditor}
+          errorMessage={errorMsg}
+          hidePlaceholder={inlineMode}
+          languageServer={{
+            path: lspServerPath,
+          }}
+          lgOption={lgOption}
+          lgTemplates={file?.allTemplates}
+          memoryVariables={memoryVariables}
+          telemetryClient={TelemetryClient}
+          value={content}
+          onChange={onChange}
+          onChangeSettings={handleSettingsChange}
+          onNavigateToLgPage={navigateToLgPage}
+        />
+      </React.Suspense>
     );
   }, [lgOption, userSettings.codeEditor]);
 

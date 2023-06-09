@@ -20,38 +20,48 @@ import {
 
 // Wrapper class
 class LgWorker extends BaseWorker<LgActionType> {
-  addProject(projectId: string) {
-    return this.sendMsg<LgNewCachePayload>(LgActionType.NewCache, { projectId });
+  async addProject(projectId: string) {
+    return await this.sendMsg<LgNewCachePayload>(LgActionType.NewCache, { projectId });
   }
 
-  removeProject(projectId: string) {
-    return this.sendMsg<LgCleanCachePayload>(LgActionType.CleanCache, { projectId });
+  async removeProject(projectId: string) {
+    return await this.sendMsg<LgCleanCachePayload>(LgActionType.CleanCache, { projectId });
   }
 
-  parse(projectId: string, id: string, content: string, lgFiles: LgFile[]) {
-    return this.sendMsg<LgParsePayload>(LgActionType.Parse, { id, content, lgFiles, projectId });
+  async parse(projectId: string, id: string, content: string, lgFiles: LgFile[]): Promise<any> {
+    return await this.sendMsg<LgParsePayload>(LgActionType.Parse, { id, content, lgFiles, projectId });
   }
 
-  parseAll(projectId: string, lgResources: TextFile[]) {
-    return this.sendMsg<LgParseAllPayload>(LgActionType.ParseAll, { lgResources, projectId });
+  async parseAll(projectId: string, lgResources: TextFile[]) {
+    return await this.sendMsg<LgParseAllPayload>(LgActionType.ParseAll, { lgResources, projectId });
   }
 
-  addTemplate(projectId: string, lgFile: LgFile, template: LgTemplate, lgFiles: LgFile[]) {
-    return this.sendMsg<LgCreateTemplatePayload>(LgActionType.AddTemplate, { lgFile, template, lgFiles, projectId });
+  async addTemplate(projectId: string, lgFile: LgFile, template: LgTemplate, lgFiles: LgFile[]) {
+    return await this.sendMsg<LgCreateTemplatePayload>(LgActionType.AddTemplate, {
+      lgFile,
+      template,
+      lgFiles,
+      projectId,
+    });
   }
 
-  addTemplates(projectId: string, lgFile: LgFile, templates: LgTemplate[], lgFiles: LgFile[]) {
-    return this.sendMsg<LgCreateTemplatesPayload>(LgActionType.AddTemplates, { lgFile, templates, lgFiles, projectId });
+  async addTemplates(projectId: string, lgFile: LgFile, templates: LgTemplate[], lgFiles: LgFile[]) {
+    return await this.sendMsg<LgCreateTemplatesPayload>(LgActionType.AddTemplates, {
+      lgFile,
+      templates,
+      lgFiles,
+      projectId,
+    });
   }
 
-  updateTemplate(
+  async updateTemplate(
     projectId: string,
     lgFile: LgFile,
     templateName: string,
     template: { name?: string; parameters?: string[]; body?: string },
     lgFiles: LgFile[]
   ) {
-    return this.sendMsg<LgUpdateTemplatePayload>(LgActionType.UpdateTemplate, {
+    return await this.sendMsg<LgUpdateTemplatePayload>(LgActionType.UpdateTemplate, {
       lgFile,
       templateName,
       template,
@@ -60,8 +70,8 @@ class LgWorker extends BaseWorker<LgActionType> {
     });
   }
 
-  removeTemplate(projectId: string, lgFile: LgFile, templateName: string, lgFiles: LgFile[]) {
-    return this.sendMsg<LgRemoveTemplatePayload>(LgActionType.RemoveTemplate, {
+  async removeTemplate(projectId: string, lgFile: LgFile, templateName: string, lgFiles: LgFile[]) {
+    return await this.sendMsg<LgRemoveTemplatePayload>(LgActionType.RemoveTemplate, {
       lgFile,
       templateName,
       lgFiles,
@@ -69,8 +79,8 @@ class LgWorker extends BaseWorker<LgActionType> {
     });
   }
 
-  removeTemplates(projectId: string, lgFile: LgFile, templateNames: string[], lgFiles: LgFile[]) {
-    return this.sendMsg<LgRemoveAllTemplatesPayload>(LgActionType.RemoveAllTemplates, {
+  async removeTemplates(projectId: string, lgFile: LgFile, templateNames: string[], lgFiles: LgFile[]) {
+    return await this.sendMsg<LgRemoveAllTemplatesPayload>(LgActionType.RemoveAllTemplates, {
       lgFile,
       templateNames,
       lgFiles,
@@ -78,8 +88,14 @@ class LgWorker extends BaseWorker<LgActionType> {
     });
   }
 
-  copyTemplate(projectId: string, lgFile: LgFile, fromTemplateName: string, toTemplateName: string, lgFiles: LgFile[]) {
-    return this.sendMsg<LgCopyTemplatePayload>(LgActionType.CopyTemplate, {
+  async copyTemplate(
+    projectId: string,
+    lgFile: LgFile,
+    fromTemplateName: string,
+    toTemplateName: string,
+    lgFiles: LgFile[]
+  ) {
+    return await this.sendMsg<LgCopyTemplatePayload>(LgActionType.CopyTemplate, {
       lgFile,
       fromTemplateName,
       toTemplateName,

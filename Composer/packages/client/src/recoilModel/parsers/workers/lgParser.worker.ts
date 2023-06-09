@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 import { lgUtil } from '@bfc/indexers';
-import { lgImportResolverGenerator, LgFile, TextFile } from '@bfc/shared';
+import { lgImportResolverGenerator, LgFile } from '@bfc/shared';
+import { jsonc } from 'jsonc';
 
 import {
   LgActionType,
@@ -16,6 +17,7 @@ import {
   LgCleanCachePayload,
   LgParseAllPayload,
 } from '../types';
+import { IndexedDBCache } from '../../persistence/indexerDBcache';
 
 const ctx: Worker = self as any;
 
@@ -107,43 +109,111 @@ export class LgCache {
   // use projectId to support multiple bots.
   projects: Map<string, LgResources> = new Map();
 
-  public set(projectId: string, value: LgFile) {
-    const lgResources = this.projects.get(projectId);
+  public db: IndexedDBCache;
 
-    if (!lgResources) return;
+  constructor() {
+    this.db = new IndexedDBCache();
+  }
 
-    console.log('lgCache-set: value.id: ' + value.id + ' value: ' + value);
+  //public set(projectId: string, value: LgFile) {
+  async set(projectId: string, value: LgFile) {
+    console.log('parserWorker-set: get');
+    const lgResources = await this.db.projects.get(projectId);
+
+    //if (!lgResources) return;
+    console.log('parserWorker-set: lgResources.set');
     lgResources.set(value.id, value);
-    console.log('lgResources.set done');
 
-    //update reference resource
+    // update reference resource
     const updatedResource = value.parseResult;
     lgResources.forEach((lgResource) => {
       if (lgResource.parseResult) {
+        //lgResource.parseResult = '';
+        if (!lgResource.parseResult.references) {
+          //const parsedRes = JSON.parse(lgResource.parseResult);
+          //lgResource.parseResult = parsedRes;
+        }
         lgResource.parseResult.references = lgResource.parseResult.references.map((ref) => {
           return ref.id === value.id ? updatedResource : ref;
         });
+        const stringResult = this.stringifyResults(lgResource.parseResult);
+        lgResource.parseResult = stringResult;
+        console.log('parserResult stringified');
       }
     });
 
-    this.projects.set(projectId, lgResources);
-    console.log('this.projects.set done');
+    //this.projects.set(projectId, lgResources);
+    console.log('parserWorker-set: put');
+    const result = await this.db.projects.put(lgResources, projectId);
+    console.log('parserWorker-set: done with put: ' + result);
   }
 
-  public get(projectId: string, fileId: string) {
-    console.log('lgCache-get fileId: ' + fileId);
-    const file = this.projects.get(projectId)?.get(fileId);
-    console.log('lgCache-get: file.id: ' + file?.id + ' file: ' + file);
-    return file;
+  private stringifyResults(obj) {
+    console.log('entered stringifyResults');
+    let cache: object[] = [];
+    const str = JSON.stringify(obj, (key, value) => {
+      if (typeof value === 'object' && value !== null) {
+        if (cache.indexOf(value) !== -1) {
+          // Circular reference found, discard key
+          return;
+        }
+        // Store value in our collection
+        cache.push(value);
+      }
+      return value;
+    });
+    cache = []; // reset the cache
+    console.log('exited stringifyResults');
+    return JSON.parse(str);
   }
 
-  public removeProject(projectId: string) {
-    this.projects.delete(projectId);
+  // private updateResourceReference(resources: LgResources, value: LgFile) {
+  //   resources.set(value.id, value);
+
+  //   // update reference resource
+  //   const updatedResource = value.parseResult;
+  //   resources.forEach((lgResource) => {
+  //     if (lgResource.parseResult) {
+  //       lgResource.parseResult.references = lgResource.parseResult.references.map((ref) => {
+  //         return ref.id === value.id ? updatedResource : ref;
+  //       });
+  //     }
+  //   });
+
+  //   return resources;
+  // }
+
+  // public get(projectId: string, fileId: string) {
+  //   console.log('lgCache-get fileId: ' + fileId);
+  //   const file = this.projects.get(projectId)?.get(fileId);
+  //   console.log('lgCache-get: file.id: ' + file?.id + ' file: ' + file);
+  //   return file;
+  // }
+
+  async get(projectId: string, fileId: string) {
+    const project = await this.db.projects.get(projectId);
+    return project?.[fileId];
   }
 
-  public addProject(projectId: string) {
-    const lgResources = new Map();
-    this.projects.set(projectId, lgResources);
+  async getMany(projectId: string, filter?: (obj: any) => boolean) {
+    const result = await this.db.projects
+      .filter((val) => (val.id === projectId && filter ? filter(val) : true))
+      .toArray();
+    if (result.length === null) {
+      return Array.from(result, ([name, value]) => value);
+    }
+    return result;
+  }
+
+  async removeProject(projectId: string) {
+    return this.db.projects.delete(projectId);
+  }
+
+  async addProject(projectId: string) {
+    const project = await this.db.projects.get(projectId);
+    if (!project) {
+      await this.db.projects.add(new Map(), projectId);
+    }
   }
 }
 
@@ -159,16 +229,16 @@ const filterParseResult = (lgFile: LgFile) => {
   return cloned;
 };
 
-const getTargetFile = (projectId: string, lgFile: LgFile, lgFiles: LgFile[]) => {
-  console.log('getTargetFile');
-  const cachedFile = cache.get(projectId, lgFile.id);
+const getTargetFile = async (projectId: string, lgFile: LgFile, lgFiles: LgFile[]) => {
+  //console.log('getTargetFile');
+  const cachedFile = await cache.get(projectId, lgFile.id);
 
   if (cachedFile?.isContentUnparsed) {
-    console.log('isContentUnparsed');
+    //console.log('isContentUnparsed');
     //parse content, set and return
     const lgFile = lgUtil.parse(cachedFile.id, cachedFile.content, lgFiles);
     lgFile.isContentUnparsed = false;
-    console.log('going to set file: ' + lgFile.id + lgFile.isContentUnparsed);
+    //console.log('going to set file: ' + lgFile.id + lgFile.isContentUnparsed);
     cache.set(projectId, lgFile);
     return filterParseResult(lgFile);
   }
@@ -189,19 +259,19 @@ const emptyLgFile = (id: string, content: string): LgFile => {
   };
 };
 
-export const handleMessage = (msg: LgMessageEvent) => {
+export const handleMessage = async (msg: LgMessageEvent) => {
   console.log('handle Message: ' + msg.type);
   let payload: any = null;
   switch (msg.type) {
     case LgActionType.NewCache: {
       const { projectId } = msg.payload;
-      cache.addProject(projectId);
+      await cache.addProject(projectId);
       break;
     }
 
     case LgActionType.CleanCache: {
       const { projectId } = msg.payload;
-      cache.removeProject(projectId);
+      await cache.removeProject(projectId);
       break;
     }
 
@@ -209,7 +279,7 @@ export const handleMessage = (msg: LgMessageEvent) => {
       const { id, content, lgFiles, projectId } = msg.payload;
 
       const lgFile = lgUtil.parse(id, content, lgFiles);
-      cache.set(projectId, lgFile);
+      await cache.set(projectId, lgFile);
       payload = filterParseResult(lgFile);
       break;
     }
@@ -217,31 +287,43 @@ export const handleMessage = (msg: LgMessageEvent) => {
     case LgActionType.ParseAll: {
       const { lgResources, projectId } = msg.payload;
 
-      payload = lgResources.map(({ id, content }) => {
+      const payload: LgFile[] = [];
+      //payload = await Promise.all(
+      for (const lgResource of lgResources) {
+        //lgResources.map(async ({ id, content }) => {
         //payload = lgResources.map((txtFile) => {
         //const lgFile = lgUtil.parse(id, content, lgResources);
         //cache.set(projectId, lgFile);
-        const emptyLg = emptyLgFile(id, content);
-        cache.set(projectId, emptyLg);
+        const emptyLg = emptyLgFile(lgResource.id, lgResource.content);
+        //const key = projectId.concat('-', emptyLg.id);
+        //console.log('parseAll-set: ' + emptyLg.id);
+        await cache.set(projectId, emptyLg);
+        //console.log('parseAll-set-done: ' + emptyLg.id);
         //return filterParseResult(lgFile);
-        return filterParseResult(emptyLg);
-      });
+        payload.push(filterParseResult(emptyLg));
+      }
+      //);
 
       break;
     }
 
     case LgActionType.AddTemplate: {
       const { lgFile, template, lgFiles, projectId } = msg.payload;
-      const result = lgUtil.addTemplate(getTargetFile(projectId, lgFile, lgFiles), template, lgFileResolver(lgFiles));
-      cache.set(projectId, result);
+      const target = await getTargetFile(projectId, lgFile, lgFiles);
+      const result = lgUtil.addTemplate(target, template, lgFileResolver(lgFiles));
+      await cache.set(projectId, result);
       payload = filterParseResult(result);
       break;
     }
 
     case LgActionType.AddTemplates: {
       const { lgFile, templates, lgFiles, projectId } = msg.payload;
-      const result = lgUtil.addTemplates(getTargetFile(projectId, lgFile, lgFiles), templates, lgFileResolver(lgFiles));
-      cache.set(projectId, result);
+      const result = lgUtil.addTemplates(
+        await getTargetFile(projectId, lgFile, lgFiles),
+        templates,
+        lgFileResolver(lgFiles)
+      );
+      await cache.set(projectId, result);
       payload = filterParseResult(result);
       break;
     }
@@ -249,12 +331,12 @@ export const handleMessage = (msg: LgMessageEvent) => {
     case LgActionType.UpdateTemplate: {
       const { lgFile, templateName, template, lgFiles, projectId } = msg.payload;
       const result = lgUtil.updateTemplate(
-        getTargetFile(projectId, lgFile, lgFiles),
+        await getTargetFile(projectId, lgFile, lgFiles),
         templateName,
         template,
         lgFileResolver(lgFiles)
       );
-      cache.set(projectId, result);
+      await cache.set(projectId, result);
       payload = filterParseResult(result);
       break;
     }
@@ -262,11 +344,11 @@ export const handleMessage = (msg: LgMessageEvent) => {
     case LgActionType.RemoveTemplate: {
       const { lgFile, templateName, lgFiles, projectId } = msg.payload;
       const result = lgUtil.removeTemplate(
-        getTargetFile(projectId, lgFile, lgFiles),
+        await getTargetFile(projectId, lgFile, lgFiles),
         templateName,
         lgFileResolver(lgFiles)
       );
-      cache.set(projectId, result);
+      await cache.set(projectId, result);
       payload = filterParseResult(result);
       break;
     }
@@ -274,11 +356,11 @@ export const handleMessage = (msg: LgMessageEvent) => {
     case LgActionType.RemoveAllTemplates: {
       const { lgFile, templateNames, lgFiles, projectId } = msg.payload;
       const result = lgUtil.removeTemplates(
-        getTargetFile(projectId, lgFile, lgFiles),
+        await getTargetFile(projectId, lgFile, lgFiles),
         templateNames,
         lgFileResolver(lgFiles)
       );
-      cache.set(projectId, result);
+      await cache.set(projectId, result);
       payload = filterParseResult(result);
       break;
     }
@@ -286,12 +368,12 @@ export const handleMessage = (msg: LgMessageEvent) => {
     case LgActionType.CopyTemplate: {
       const { lgFile, toTemplateName, fromTemplateName, lgFiles, projectId } = msg.payload;
       const result = lgUtil.copyTemplate(
-        getTargetFile(projectId, lgFile, lgFiles),
+        await getTargetFile(projectId, lgFile, lgFiles),
         fromTemplateName,
         toTemplateName,
         lgFileResolver(lgFiles)
       );
-      cache.set(projectId, result);
+      await cache.set(projectId, result);
       payload = filterParseResult(result);
       break;
     }
@@ -299,11 +381,11 @@ export const handleMessage = (msg: LgMessageEvent) => {
   return payload;
 };
 
-ctx.onmessage = function (event) {
+ctx.onmessage = async function (event) {
   const msg = event.data as LgMessageEvent;
 
   try {
-    const payload = handleMessage(msg);
+    const payload = await handleMessage(msg);
 
     ctx.postMessage({ id: msg.id, payload });
   } catch (error) {
