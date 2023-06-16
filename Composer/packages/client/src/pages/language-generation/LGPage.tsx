@@ -30,8 +30,9 @@ const LGPage: React.FC<RouteComponentProps<{
   const [activeFile, setActiveFile] = useState();
   const actualProjectId = skillId ?? projectId;
   const locale = useRecoilValue(localeState(actualProjectId));
-  const lgFiles = useRecoilValue(lgFilesSelectorFamily(skillId ?? projectId));
-  // const [currentLg, setCurrentLg] = useRecoilState(
+  //const lgFiles = lgFilesSelectorFamily(skillId ?? projectId);
+  //const [lgFiles, setLgFiles] = useRecoilState(lgFilesSelectorFamily(skillId ?? projectId));
+  //const [currentLg, setCurrentLg] = useRecoilState(
   //   lgFileState({ projectId: actualProjectId, lgFileId: `${dialogId}.${locale}` })
   // );
   const path = props.location?.pathname ?? '';
@@ -40,58 +41,40 @@ const LGPage: React.FC<RouteComponentProps<{
 
   const baseURL = skillId == null ? `/bot/${projectId}/` : `/bot/${projectId}/skill/${skillId}/`;
 
-  const getLgFileId = () =>
-    lgFileId
-      ? lgFiles.find(({ id }) => id === lgFileId || id === `${lgFileId}.${locale}`)
-      : lgFiles.find(({ id }) => id === dialogId || id === `${dialogId}.${locale}`);
-
-  //const getLgFileId = () => (lgFileId ? `${lgFileId}.${locale}` : `${dialogId}.${locale}`);
-
-  // const getActiveFile = () => {
-  //   let file: LgFile | undefined;
-  //   console.log('LGPage-activeFile');
-  //   if (lgFileId) {
-  //     file = lgFiles.find(({ id }) => id === lgFileId || id === `${lgFileId}.${locale}`);
-  //   } else {
-  //     file = lgFiles.find(({ id }) => id === dialogId || id === `${dialogId}.${locale}`);
-  //   }
-  //   console.log('file?.isContentUnparsed: ' + file?.isContentUnparsed);
-  //   if (file?.isContentUnparsed) {
-  //     //parse, set and return
-  //     lgWorker.parse(actualProjectId, currentLg.id, currentLg.content, lgFiles).then((result) => {
-  //       setCurrentLg(result as LgFile);
-  //       console.log('parsed lg: ' + currentLg.id);
-  //       return currentLg;
-  //     });
-  //   }
-  //   console.log('lg: ' + file?.id);
-  //   return file;
-  // };
-
-  // const activeFile = getActiveFile();
-  // console.log('activeFile: ' + activeFile?.id);
+  // const getLgFileId = () =>
+  //   lgFileId
+  //     ? ((lgFiles as unknown) as LgFile[]).find(({ id }) => id === lgFileId || id === `${lgFileId}.${locale}`)
+  //     : ((lgFiles as unknown) as LgFile[]).find(({ id }) => id === dialogId || id === `${dialogId}.${locale}`);
+  const getLgFileId = () => (lgFileId ? `${lgFileId}.${locale}` : `${dialogId}.${locale}`);
 
   useEffect(() => {
-    //   if (!activeFile && lgFiles.length) {
-    //     navigateTo(`${baseURL}language-generation/common`);
-    //   }
-    // }, [dialogId, lgFiles, projectId, lgFileId]);
     (async () => {
-      const file = getLgFileId();
-      if (file?.isContentUnparsed) {
-        //parse, set and return
-        const lgFile = await lgWorker.parse(actualProjectId, file.id, file.content, lgFiles);
-        console.log('lgpage: ', lgFile);
-        const commonPath = `${baseURL}language-generation/common`;
-        if (!lgFile && path !== commonPath) {
-          navigateTo(commonPath);
-        }
-        setActiveFile(lgFile);
-      } else {
-        setActiveFile(file as any);
+      const id = getLgFileId();
+      const lgFile = await lgWorker.get(projectId, id);
+      console.log('lgpage: ', lgFile);
+      const commonPath = `${baseURL}language-generation/common`;
+      if (!lgFile && path !== commonPath) {
+        navigateTo(commonPath);
       }
+      setActiveFile(lgFile);
     })();
-  }, [dialogId, lgFiles, projectId, lgFileId]);
+  }, [dialogId, projectId, lgFileId]);
+
+  // useEffect(() => {
+  //   (async () => {
+  //     const file = getLgFileId();
+  //     if (file?.isContentUnparsed) {
+  //       const lgFile = await lgWorker.parse(actualProjectId, file.id, file.content, lgFiles);
+  //       const commonPath = `${baseURL}language-generation/common`;
+  //       if (!lgFile && path !== commonPath) {
+  //         navigateTo(commonPath);
+  //       }
+  //       setActiveFile(lgFile);
+  //     } else {
+  //       setActiveFile(file as any);
+  //     }
+  //   })();
+  // }, [dialogId, lgFiles, projectId, lgFileId]);
 
   const onToggleEditMode = useCallback(
     (_e) => {

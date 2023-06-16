@@ -1,21 +1,22 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 import { useRef } from 'react';
-import { lgImportResolverGenerator } from '@bfc/shared';
+//import { lgImportResolverGenerator } from '@bfc/shared';
 import { useRecoilValue } from 'recoil';
 
 import { dialogsSelectorFamily, luFilesSelectorFamily, localeState, qnaFilesSelectorFamily } from '../recoilModel';
-import { lgFilesSelectorFamily } from '../recoilModel/selectors/lg';
+import lgWorker from '../recoilModel/parsers/lgWorker';
+//import { lgFilesSelectorFamily } from '../recoilModel/selectors/lg';
 
 export const useResolvers = (projectId: string) => {
   const dialogs = useRecoilValue(dialogsSelectorFamily(projectId));
   const luFiles = useRecoilValue(luFilesSelectorFamily(projectId));
-  const lgFiles = useRecoilValue(lgFilesSelectorFamily(projectId));
+  //const lgFiles = useRecoilValue(lgFilesSelectorFamily(projectId));
   const locale = useRecoilValue(localeState(projectId));
   const qnaFiles = useRecoilValue(qnaFilesSelectorFamily(projectId));
 
-  const lgFilesRef = useRef(lgFiles);
-  lgFilesRef.current = lgFiles;
+  // const lgFilesRef = useRef(lgFiles);
+  // lgFilesRef.current = lgFiles;
 
   const localeRef = useRef(locale);
   localeRef.current = locale;
@@ -29,12 +30,24 @@ export const useResolvers = (projectId: string) => {
   const dialogsRef = useRef(dialogs);
   dialogsRef.current = dialogs;
 
-  const lgImportresolver = () => lgImportResolverGenerator(lgFilesRef.current, '.lg');
+  //const lgImportresolver = () => lgImportResolverGenerator(lgFilesRef.current, '.lg');
 
-  const lgFileResolver = (id: string) => {
+  const lgFileResolver = async (id: string) => {
     const fileId = id.includes('.') ? id : `${id}.${localeRef.current}`;
-    return lgFilesRef.current.find(({ id }) => id === fileId);
+    //return lgFilesRef.current.find(({ id }) => id === fileId);
+    const lgFile = await lgWorker.get(projectId, fileId);
+    console.log('useResolver: ' + lgFile);
+    return lgFile;
   };
+
+  // const lgFileResolver = (id: string) => {
+  //   const fileId = id.includes('.') ? id : `${id}.${localeRef.current}`;
+  //   // eslint-disable-next-line react-hooks/rules-of-hooks
+  //   const lgFilesRef = ({ set }: CallbackInterface) => async () => {
+  //     await set(lgFilesSelectorFamily(projectId, ({ id }) => id === fileId));
+  //   };
+  //   return lgFilesRef;
+  // };
 
   const luFileResolver = (id: string) => {
     const fileId = id.includes('.') ? id : `${id}.${localeRef.current}`;
@@ -51,7 +64,7 @@ export const useResolvers = (projectId: string) => {
   };
 
   return {
-    lgImportresolver,
+    //lgImportresolver,
     luFileResolver,
     lgFileResolver,
     qnaFileResolver,

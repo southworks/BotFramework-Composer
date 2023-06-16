@@ -158,6 +158,29 @@ export function addTemplate(
   const { id } = lgFile;
   const resource = getLgResource(lgFile, importResolver);
 
+  // const template = new Templates(
+  //   resource.items,
+  //   resource.imports,
+  //   resource.diagnostics,
+  //   resource.references,
+  //   resource.content,
+  //   resource.id,
+  //   undefined,
+  //   undefined,
+  //   resource.options,
+  //   resource.source,
+  //   resource.namedReferences
+  // );
+  // const template = new Templates(resource.items);
+  // template.imports = resource.imports ?? [];
+  // template.diagnostics = resource.diagnostics ?? [];
+  // template.references = resource.references ?? [];
+  // template.content = resource.content;
+  // template.id = resource.id;
+  // template.options = resource.options;
+  // template.source = resource.source;
+  // template.namedReferences = resource.namedReferences ?? {};
+
   const templates = resource.addTemplate(name, parameters, body);
   return convertTemplatesToLgFile(id, templates.toString(), templates);
 }

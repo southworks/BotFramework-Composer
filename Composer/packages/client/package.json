@@ -61,6 +61,7 @@
     "format-message": "6.2.4",
     "format-message-generate-id": "^6.2.3",
     "immer": "^9.0.6",
+    "json-decycle": "^3.0.0",
     "jsonwebtoken": "^9.0.0",
     "jszip": "^3.8.0",
     "jwt-decode": "^2.2.0",

@@ -29,7 +29,9 @@ export const getLanguageFileImports = <T extends LgFile | LuFile | QnAFile>(
       continue;
     }
 
+    //console.log('currentId: ' + currentId);
     const file = getFile(currentId);
+    //console.log('file: ' + file);
     // If file is not found or file content is empty, then continue.
     if (!file || !file.content) {
       // eslint-disable-next-line no-console
@@ -61,8 +63,15 @@ export const lgImportsSelectorFamily = selectorFamily<LanguageFileImport[], { pr
   get: ({ projectId, dialogId }) => ({ get }) => {
     const locale = get(localeState(projectId));
 
-    const getFile = (fileId: string) =>
-      get(lgFilesSelectorFamily(projectId)).find((f) => f.id === fileId || f.id === `${fileId}.${locale}`) as LgFile;
+    const getFile = (fileId: string) => {
+      //get(lgFilesSelectorFamily(projectId)).find((f) => f.id === fileId || f.id === `${fileId}.${locale}`) as LgFile;
+      //const key = projectId.concat(`-${fileId}.${locale}`);
+      const lgFiles = get(lgFilesSelectorFamily(projectId));
+      //('dialogImports-lgFiles: ' + lgFiles.length);
+      const lgFile = lgFiles.find((f) => f.id === fileId || f.id === `${fileId}.${locale}`) as LgFile;
+      //console.log('dialogImports-lgFile: ' + lgFile.id);
+      return lgFile;
+    };
 
     // Have to exclude common as a special case
     return getLanguageFileImports(dialogId, getFile).filter((i) => getBaseName(i.id) !== 'common');

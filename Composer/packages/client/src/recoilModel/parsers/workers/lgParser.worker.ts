@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 import { lgUtil } from '@bfc/indexers';
 import { lgImportResolverGenerator, LgFile } from '@bfc/shared';
-import { jsonc } from 'jsonc';
 
+import { decycle, retrocycle } from '../../utils/jsonDecycleUtil';
 import {
   LgActionType,
   LgParsePayload,
@@ -16,8 +16,9 @@ import {
   LgNewCachePayload,
   LgCleanCachePayload,
   LgParseAllPayload,
+  LgGetlPayload,
 } from '../types';
-import { IndexedDBCache } from '../../persistence/indexerDBcache';
+import { IndexedDBCache, Project } from '../../persistence/indexerDBcache';
 
 const ctx: Worker = self as any;
 
@@ -87,6 +88,12 @@ type ParseAllMessage = {
   payload: LgParseAllPayload;
 };
 
+type GetMessage = {
+  id: string;
+  type: LgActionType.Get;
+  payload: LgGetlPayload;
+};
+
 type LgMessageEvent =
   | NewCacheMessage
   | CleanCacheMeassage
@@ -97,7 +104,8 @@ type LgMessageEvent =
   | RemoveMessage
   | RemoveAllMessage
   | CopyMessage
-  | ParseAllMessage;
+  | ParseAllMessage
+  | GetMessage;
 
 type LgResources = Map<string, LgFile>;
 
@@ -118,7 +126,8 @@ export class LgCache {
   //public set(projectId: string, value: LgFile) {
   async set(projectId: string, value: LgFile) {
     console.log('parserWorker-set: get');
-    const lgResources = await this.db.projects.get(projectId);
+    const project = await this.db.projects.get(projectId);
+    const lgResources = project.lgResources;
 
     //if (!lgResources) return;
     console.log('parserWorker-set: lgResources.set');
@@ -136,7 +145,9 @@ export class LgCache {
         lgResource.parseResult.references = lgResource.parseResult.references.map((ref) => {
           return ref.id === value.id ? updatedResource : ref;
         });
-        const stringResult = this.stringifyResults(lgResource.parseResult);
+        //const stringResult = this.stringifyResults(lgResource.parseResult);
+        //const stringResult = JSON.stringify(lgResource.parseResult, decycle());
+        const stringResult = JSON.parse(JSON.stringify(decycle(lgResource.parseResult, undefined)));
         lgResource.parseResult = stringResult;
         console.log('parserResult stringified');
       }
@@ -148,24 +159,25 @@ export class LgCache {
     console.log('parserWorker-set: done with put: ' + result);
   }
 
-  private stringifyResults(obj) {
-    console.log('entered stringifyResults');
-    let cache: object[] = [];
-    const str = JSON.stringify(obj, (key, value) => {
-      if (typeof value === 'object' && value !== null) {
-        if (cache.indexOf(value) !== -1) {
-          // Circular reference found, discard key
-          return;
-        }
-        // Store value in our collection
-        cache.push(value);
-      }
-      return value;
-    });
-    cache = []; // reset the cache
-    console.log('exited stringifyResults');
-    return JSON.parse(str);
-  }
+  // private stringifyResults(obj) {
+  //   console.log('entered stringifyResults');
+  //   let cache: object[] = [];
+  //   const str = JSON.stringify(obj, (key, value) => {
+  //     if (typeof value === 'object' && value !== null) {
+  //       if (cache.indexOf(value) !== -1) {
+  //         // Circular reference found, discard key
+  //         return;
+  //         //value = null;
+  //       }
+  //       // Store value in our collection
+  //       cache.push(value);
+  //     }
+  //     return value;
+  //   });
+  //   cache = []; // reset the cache
+  //   console.log('exited stringifyResults');
+  //   return JSON.parse(str);
+  // }
 
   // private updateResourceReference(resources: LgResources, value: LgFile) {
   //   resources.set(value.id, value);
@@ -190,9 +202,17 @@ export class LgCache {
   //   return file;
   // }
 
-  async get(projectId: string, fileId: string) {
+  async get(projectId: string, fileId?: string) {
     const project = await this.db.projects.get(projectId);
-    return project?.[fileId];
+    if (!fileId) {
+      //return project;
+      return Array.from(project, ([name, value]) => value);
+    }
+    for (const [key, value] of project.entries()) {
+      if (key === fileId) {
+        return value;
+      }
+    }
   }
 
   async getMany(projectId: string, filter?: (obj: any) => boolean) {
@@ -240,10 +260,23 @@ const getTargetFile = async (projectId: string, lgFile: LgFile, lgFiles: LgFile[
     lgFile.isContentUnparsed = false;
     //console.log('going to set file: ' + lgFile.id + lgFile.isContentUnparsed);
     cache.set(projectId, lgFile);
-    return filterParseResult(lgFile);
+    //return filterParseResult(lgFile);
+    return lgFile;
   }
+  const retroLgFile = retrocycle(cachedFile.parseResult);
+  cachedFile.parseResult = retroLgFile;
+  //cachedFile.parseResult = retroLgFile;
+  // const updatedResource = cachedFile.parseResult;
+  // lgFiles.forEach((lgResource) => {
+  //   if (lgResource.parseResult) {
+  //     lgResource.parseResult.references = lgResource.parseResult.references.map((ref) => {
+  //       return ref.id === retroLgFile.id ? updatedResource : ref;
+  //     });
+  //   }
+  // });
 
   // Instead of compare content, just use cachedFile as single truth of fact, because all updates are supposed to be happen in worker, and worker will always update cache.
+  //return cachedFile ?? lgFile;
   return cachedFile ?? lgFile;
 };
 
@@ -263,6 +296,22 @@ export const handleMessage = async (msg: LgMessageEvent) => {
   console.log('handle Message: ' + msg.type);
   let payload: any = null;
   switch (msg.type) {
+    case LgActionType.Get: {
+      const { projectId, id } = msg.payload;
+      let lgFile = await cache.get(projectId, id);
+      if (!lgFile) {
+        return;
+      }
+      if (lgFile.length > 1) {
+        return lgFile;
+      }
+      if (lgFile.isContentUnparsed !== false) {
+        const lgFiles = await cache.getMany(projectId);
+        lgFile = lgUtil.parse(lgFile.id, lgFile.content, lgFiles);
+        await cache.set(projectId, lgFile);
+      }
+      return lgFile;
+    }
     case LgActionType.NewCache: {
       const { projectId } = msg.payload;
       await cache.addProject(projectId);

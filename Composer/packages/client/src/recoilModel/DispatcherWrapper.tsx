@@ -9,7 +9,7 @@ import { BotAssets } from '@bfc/shared';
 import { useRecoilValue } from 'recoil';
 import isEmpty from 'lodash/isEmpty';
 
-import { createMissingLgTemplatesForDialogs } from '../utils/lgUtil';
+//import { createMissingLgTemplatesForDialogs } from '../utils/lgUtil';
 
 import { dialogsSelectorFamily, luFilesSelectorFamily, qnaFilesSelectorFamily } from './selectors';
 import { UndoRoot } from './undo/history';
@@ -24,7 +24,7 @@ import {
   jsonSchemaFilesState,
   crossTrainConfigState,
   dispatcherState,
-  projectIndexingState,
+  //projectIndexingState,
 } from './atoms';
 import { localBotsWithoutErrorsSelector, formDialogSchemasSelectorFamily } from './selectors';
 import { Recognizer } from './Recognizers';
@@ -94,18 +94,18 @@ const InitDispatcher = ({ onLoad }) => {
   return null;
 };
 
-const repairBotProject = async (projectId: string, snapshot: Snapshot, previousSnapshot: Snapshot) => {
-  const indexingState = await snapshot.getPromise(projectIndexingState(projectId));
-  const preIndexingState = await previousSnapshot.getPromise(projectIndexingState(projectId));
-  if (indexingState === false && preIndexingState == true) {
-    const dialogs = await snapshot.getPromise(dialogsSelectorFamily(projectId));
-    const lgFiles = await snapshot.getPromise(lgFilesSelectorFamily(projectId));
+// const repairBotProject = async (projectId: string, snapshot: Snapshot, previousSnapshot: Snapshot) => {
+//   const indexingState = await snapshot.getPromise(projectIndexingState(projectId));
+//   const preIndexingState = await previousSnapshot.getPromise(projectIndexingState(projectId));
+//   if (indexingState === false && preIndexingState == true) {
+//     const dialogs = await snapshot.getPromise(dialogsSelectorFamily(projectId));
+//     const lgFiles = await snapshot.getPromise(lgFilesSelectorFamily(projectId));
 
-    //const updatedLgFiles = await createMissingLgTemplatesForDialogs(projectId, dialogs, lgFiles);
-    //const { updateAllLgFiles } = await snapshot.getPromise(dispatcherState);
-    //updateAllLgFiles({ projectId, lgFiles: updatedLgFiles });
-  }
-};
+//     const updatedLgFiles = await createMissingLgTemplatesForDialogs(projectId, dialogs, lgFiles);
+//     const { updateAllLgFiles } = await snapshot.getPromise(dispatcherState);
+//     updateAllLgFiles({ projectId, lgFiles: updatedLgFiles });
+//   }
+// };
 
 export const DispatcherWrapper = ({ children }) => {
   const [loaded, setLoaded] = useState(false);
@@ -119,7 +119,7 @@ export const DispatcherWrapper = ({ children }) => {
       const previousAssets = await getBotAssets(projectId, previousSnapshot);
       const filePersistence = await snapshot.getPromise(filePersistenceState(projectId));
       if (!isEmpty(filePersistence)) {
-        await repairBotProject(projectId, snapshot, previousSnapshot);
+        //await repairBotProject(projectId, snapshot, previousSnapshot);
         if (filePersistence.isErrorHandlerEmpty()) {
           filePersistence.registerErrorHandler(setProjectError);
         }

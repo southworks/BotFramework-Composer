@@ -33,25 +33,25 @@ const memoizedDebounce = (func, wait, options = {}) => {
 function createLgApi(
   state: { dialogId: string; projectId: string },
   actions: Dispatcher,
-  lgFileResolver: (id: string) => LgFile | undefined
+  lgFileResolver: (id: string) => Promise<LgFile | undefined>
 ): LgContextApi {
-  const getLgTemplates = (id) => {
+  const getLgTemplates = async (id) => {
     if (id === undefined) throw new Error('must have a file id');
     const focusedDialogId = state.dialogId || id;
-    const file = lgFileResolver(focusedDialogId);
+    const file = await lgFileResolver(focusedDialogId);
     if (!file) throw new Error(fileNotFound(id));
     return file.templates;
   };
 
   const updateLgFile = async (id: string, content: string) => {
-    const file = lgFileResolver(id);
+    const file = await lgFileResolver(id);
     if (!file) throw new Error(fileNotFound(id));
 
     await actions.updateLgFile({ id, content, projectId: state.projectId });
   };
 
   const updateLgTemplate = async (id: string, templateName: string, templateBody: string) => {
-    const file = lgFileResolver(id);
+    const file = await lgFileResolver(id);
     if (!file) throw new Error(fileNotFound(id));
     if (!templateName) throw new Error(TEMPLATE_ERROR);
     const template = { name: templateName, body: templateBody, parameters: [] };
@@ -65,7 +65,7 @@ function createLgApi(
   };
 
   const copyLgTemplate = async (id, fromTemplateName, toTemplateName) => {
-    const file = lgFileResolver(id);
+    const file = await lgFileResolver(id);
     if (!file) throw new Error(fileNotFound(id));
     if (!fromTemplateName || !toTemplateName) throw new Error(`templateName is missing or empty`);
 
@@ -99,7 +99,7 @@ function createLgApi(
   };
 
   const removeLgTemplate = async (id, templateName) => {
-    const file = lgFileResolver(id);
+    const file = await lgFileResolver(id);
     if (!file) throw new Error(fileNotFound(id));
     if (!templateName) throw new Error(TEMPLATE_ERROR);
 
@@ -114,7 +114,7 @@ function createLgApi(
   };
 
   const removeLgTemplates = async (id: string, templateNames: string[]) => {
-    const file = lgFileResolver(id);
+    const file = await lgFileResolver(id);
     if (!file) throw new Error(fileNotFound(id));
     if (!templateNames) throw new Error(TEMPLATE_ERROR);
 

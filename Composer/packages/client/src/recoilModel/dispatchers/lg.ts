@@ -7,7 +7,7 @@ import differenceBy from 'lodash/differenceBy';
 import formatMessage from 'format-message';
 
 import { getBaseName, getExtension } from '../../utils/fileUtil';
-import { lgFilesSelectorFamily } from '../selectors/lg';
+//import { lgFilesSelectorFamily } from '../selectors/lg';
 import { dispatcherState } from '../atoms';
 
 import { setError } from './shared';
@@ -146,7 +146,8 @@ export const createLgFileState = async (
 ) => {
   try {
     const { snapshot } = callbackHelpers;
-    const lgFiles = await snapshot.getPromise(lgFilesSelectorFamily(projectId));
+    //const lgFiles = await snapshot.getPromise(lgFilesSelectorFamily(projectId));
+    const lgFiles: LgFile[] = await LgWorker.get(projectId);
     const locale = await snapshot.getPromise(localeState(projectId));
     const { languages } = await snapshot.getPromise(settingsState(projectId));
     const createdLgId = `${id}.${locale}`;
@@ -182,7 +183,8 @@ export const removeLgFileState = async (
   { id, projectId }: { id: string; projectId: string }
 ) => {
   const { snapshot } = callbackHelpers;
-  const lgFiles = await snapshot.getPromise(lgFilesSelectorFamily(projectId));
+  //const lgFiles = await snapshot.getPromise(lgFilesSelectorFamily(projectId));
+  const lgFiles: LgFile[] = await LgWorker.get(projectId);
   const locale = await snapshot.getPromise(localeState(projectId));
 
   const targetLgFile = lgFiles.find((item) => item.id === id) || lgFiles.find((item) => item.id === `${id}.${locale}`);
@@ -239,7 +241,8 @@ export const lgDispatcher = () => {
           };
         });
 
-        const lgFiles = await snapshot.getPromise(lgFilesSelectorFamily(projectId));
+        //const lgFiles = await snapshot.getPromise(lgFilesSelectorFamily(projectId));
+        const lgFiles: LgFile[] = await LgWorker.get(projectId);
         const updatedFile = (await LgWorker.parse(projectId, id, content, lgFiles)) as LgFile;
         const updatedFiles = await getRelatedLgFileChanges(projectId, lgFiles, updatedFile);
 
@@ -278,9 +281,12 @@ export const lgDispatcher = () => {
       projectId: string;
     }) => {
       const { snapshot } = callbackHelpers;
-      const lgFiles = await snapshot.getPromise(lgFilesSelectorFamily(projectId));
+      // const lgFiles = await snapshot.getPromise(lgFilesSelectorFamily(projectId));
+      const lgFiles: LgFile[] = await LgWorker.get(projectId);
       const lgFile = lgFiles.find((file) => file.id === id);
+
       if (!lgFile) return lgFiles;
+
       const sameIdOtherLocaleFiles = lgFiles.filter((file) => getBaseName(file.id) === getBaseName(id));
 
       // create need sync to multi locale file.
@@ -340,8 +346,9 @@ export const lgDispatcher = () => {
       template: LgTemplate;
       projectId: string;
     }) => {
-      const { snapshot } = callbackHelpers;
-      const lgFiles = await snapshot.getPromise(lgFilesSelectorFamily(projectId));
+      //const { snapshot } = callbackHelpers;
+      //const lgFiles = await snapshot.getPromise(lgFilesSelectorFamily(projectId));
+      const lgFiles: LgFile[] = await LgWorker.get(projectId);
       const lgFile = lgFiles.find((file) => file.id === id);
       if (!lgFile) return lgFiles;
       const updatedFile = (await LgWorker.addTemplate(projectId, lgFile, template, lgFiles)) as LgFile;
@@ -361,8 +368,9 @@ export const lgDispatcher = () => {
       projectId: string;
     }) => {
       try {
-        const { snapshot } = callbackHelpers;
-        const lgFiles = await snapshot.getPromise(lgFilesSelectorFamily(projectId));
+        //const { snapshot } = callbackHelpers;
+        //const lgFiles = await snapshot.getPromise(lgFilesSelectorFamily(projectId));
+        const lgFiles: LgFile[] = await LgWorker.get(projectId);
         const lgFile = lgFiles.find((file) => file.id === id);
         if (!lgFile) return lgFiles;
         console.log('createLgTemplates -> addTemplates');
@@ -385,8 +393,9 @@ export const lgDispatcher = () => {
       templateName: string;
       projectId: string;
     }) => {
-      const { snapshot } = callbackHelpers;
-      const lgFiles = await snapshot.getPromise(lgFilesSelectorFamily(projectId));
+      //const { snapshot } = callbackHelpers;
+      //const lgFiles = await snapshot.getPromise(lgFilesSelectorFamily(projectId));
+      const lgFiles: LgFile[] = await LgWorker.get(projectId);
       const lgFile = lgFiles.find((file) => file.id === id);
       if (!lgFile) return lgFiles;
       try {
@@ -411,8 +420,9 @@ export const lgDispatcher = () => {
       projectId: string;
     }) => {
       try {
-        const { snapshot } = callbackHelpers;
-        const lgFiles = await snapshot.getPromise(lgFilesSelectorFamily(projectId));
+        //const { snapshot } = callbackHelpers;
+        //const lgFiles = await snapshot.getPromise(lgFilesSelectorFamily(projectId));
+        const lgFiles: LgFile[] = await LgWorker.get(projectId);
         const lgFile = lgFiles.find((file) => file.id === id);
         if (!lgFile) return lgFiles;
 
@@ -439,8 +449,9 @@ export const lgDispatcher = () => {
       projectId: string;
     }) => {
       try {
-        const { snapshot } = callbackHelpers;
-        const lgFiles = await snapshot.getPromise(lgFilesSelectorFamily(projectId));
+        //const { snapshot } = callbackHelpers;
+        //const lgFiles = await snapshot.getPromise(lgFilesSelectorFamily(projectId));
+        const lgFiles: LgFile[] = await LgWorker.get(projectId);
         const lgFile = lgFiles.find((file) => file.id === id);
         if (!lgFile) return lgFiles;
         const updatedFile = (await LgWorker.copyTemplate(
@@ -461,8 +472,9 @@ export const lgDispatcher = () => {
   const reparseAllLgFiles = useRecoilCallback(
     (callbackHelpers: CallbackInterface) => async ({ projectId }: { projectId: string }) => {
       try {
-        const { snapshot } = callbackHelpers;
-        const lgFiles = await snapshot.getPromise(lgFilesSelectorFamily(projectId));
+        //const { snapshot } = callbackHelpers;
+        //const lgFiles = await snapshot.getPromise(lgFilesSelectorFamily(projectId));
+        const lgFiles: LgFile[] = await LgWorker.get(projectId);
         const reparsedLgFiles: LgFile[] = [];
         for (const file of lgFiles) {
           const reparsedFile = (await LgDiagnosticWorker.parse(projectId, file.id, file.content, lgFiles)) as LgFile;
@@ -478,11 +490,11 @@ export const lgDispatcher = () => {
     }
   );
 
-  const updateAllLgFiles = useRecoilCallback(
-    ({ set }: CallbackInterface) => ({ projectId, lgFiles }: { projectId: string; lgFiles: LgFile[] }) => {
-      set(lgFilesSelectorFamily(projectId), lgFiles);
-    }
-  );
+  // const updateAllLgFiles = useRecoilCallback(
+  //   ({ set }: CallbackInterface) => ({ projectId, lgFiles }: { projectId: string; lgFiles: LgFile[] }) => {
+  //     set(lgFilesSelectorFamily(projectId), lgFiles);
+  //   }
+  // );
 
   return {
     updateLgFile,
@@ -495,6 +507,6 @@ export const lgDispatcher = () => {
     removeLgTemplates,
     copyLgTemplate,
     reparseAllLgFiles,
-    updateAllLgFiles,
+    //updateAllLgFiles,
   };
 };

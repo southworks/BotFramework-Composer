@@ -139,7 +139,7 @@ export type LuContextApi = {
 };
 
 export type LgContextApi = {
-  getLgTemplates: (id: string) => LgTemplate[];
+  getLgTemplates: (id: string) => Promise<LgTemplate[]>;
   copyLgTemplate: (id: string, fromTemplateName: string, toTemplateName?: string) => Promise<LgFile[] | undefined>;
   addLgTemplate: (id: string, templateName: string, templateStr: string) => Promise<LgFile[] | undefined>;
   updateLgFile: (id: string, content: string) => Promise<void>;

@@ -31,7 +31,7 @@ import objectGet from 'lodash/get';
 import objectSet from 'lodash/set';
 import cloneDeep from 'lodash/cloneDeep';
 import { stringify } from 'query-string';
-import { CallbackInterface } from 'recoil';
+import { CallbackInterface, useRecoilCallback } from 'recoil';
 import { v4 as uuid } from 'uuid';
 import isEmpty from 'lodash/isEmpty';
 
@@ -311,12 +311,35 @@ const parseAllAssets = async ({ set }: CallbackInterface, projectId: string, bot
   const dialogIds = dialogs.map((d) => d.id);
   const migratedQnAFiles = migrateQnAFiles(projectId, dialogIds, parsedQnaFiles as QnAFile[], locales);
 
-  set(lgFilesSelectorFamily(projectId), (oldFiles) => {
-    return oldFiles.map((item) => {
-      const file = (parsedLgFiles as LgFile[]).find((file) => file.id === item.id);
-      return file && item.isContentUnparsed ? file : item;
-    });
-  });
+  console.log('calling set in project');
+  // set(lgFilesSelectorFamily(projectId), (oldFiles) => {
+  //   return oldFiles.map((item) => {
+  //     const file = (parsedLgFiles as LgFile[]).find((file) => file.id === item.id);
+  //     return file && item.isContentUnparsed ? file : item;
+  //   });
+  // });
+
+  // const setFiles = async (projectId) => {
+  //   set(lgFilesSelectorFamily(projectId), (oldFiles) => {
+  //     return oldFiles.map((item) => {
+  //       const file = (parsedLgFiles as LgFile[]).find((file) => file.id === item.id);
+  //       return file && item.isContentUnparsed ? file : item;
+  //     });
+  //   });
+  // };
+
+  // await Promise.all([
+  //   (projectId: string) => {
+  //     set(lgFilesSelectorFamily(projectId), (oldFiles) => {
+  //       return oldFiles.map((item) => {
+  //         const file = (parsedLgFiles as LgFile[]).find((file) => file.id === item.id);
+  //         return file && item.isContentUnparsed ? file : item;
+  //       });
+  //     });
+  //   },
+  // ]);
+
+  //await setFiles(projectId);
 
   set(luFilesSelectorFamily(projectId), (oldFiles) => {
     return oldFiles.map((item) => {
@@ -537,7 +560,7 @@ export const initBotState = async (callbackHelpers: CallbackInterface, data: any
 
   set(skillManifestsState(projectId), skillManifests);
   set(luFilesSelectorFamily(projectId), initLuFilesStatus(botName, luFiles, dialogs));
-  set(lgFilesSelectorFamily(projectId), lgFiles);
+  //set(lgFilesSelectorFamily(projectId), lgFiles);
   set(jsonSchemaFilesState(projectId), jsonSchemaFiles);
 
   set(dialogSchemasState(projectId), dialogSchemas);
@@ -558,6 +581,7 @@ export const initBotState = async (callbackHelpers: CallbackInterface, data: any
   set(projectIndexingState(projectId), true);
   parseAllAssets(callbackHelpers, projectId, botFiles);
 
+  //await saveFiles();
   return mainDialog;
 };
 

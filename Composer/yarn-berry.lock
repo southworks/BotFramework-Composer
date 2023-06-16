@@ -3700,6 +3700,7 @@ __metadata:
     html-webpack-plugin: 4.0.0-beta.8
     immer: ^9.0.6
     jest-websocket-mock: ^2.2.0
+    json-decycle: ^3.0.0
     jsonwebtoken: ^9.0.0
     jszip: ^3.8.0
     jwt-decode: ^2.2.0
@@ -19400,6 +19401,13 @@ __metadata:
   version: 3.0.0
   resolution: "json-buffer@npm:3.0.0"
   checksum: 0cecacb8025370686a916069a2ff81f7d55167421b6aa7270ee74e244012650dd6bce22b0852202ea7ff8624fce50ff0ec1bdf95914ccb4553426e290d5a63fa
+  languageName: node
+  linkType: hard
+
+"json-decycle@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "json-decycle@npm:3.0.0"
+  checksum: 681dbad36d15bbe0a657ba53732948e7da67689f0410c6a7fd54c813474162a155c52d37af15d075d176d4cec6e9f9d2ba773d2dbda32133d5846e623bd072e6
   languageName: node
   linkType: hard
 

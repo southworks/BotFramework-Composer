@@ -26,7 +26,7 @@ import { actionButton, editableFieldContainer } from '../language-understanding/
 import { dispatcherState, localeState, settingsState, dialogsSelectorFamily, lgFileState } from '../../recoilModel';
 import { languageListTemplates } from '../../components/MultiLanguage';
 import TelemetryClient from '../../telemetry/TelemetryClient';
-import { lgFilesSelectorFamily } from '../../recoilModel/selectors/lg';
+//import { lgFilesSelectorFamily } from '../../recoilModel/selectors/lg';
 import { CellFocusZone } from '../../components/CellFocusZone';
 import lgWorker from '../../recoilModel/parsers/lgWorker';
 
@@ -43,7 +43,7 @@ const TableView: React.FC<TableViewProps> = (props) => {
 
   const actualProjectId = skillId ?? projectId;
 
-  const lgFiles = useRecoilValue(lgFilesSelectorFamily(actualProjectId));
+  //const lgFiles = useRecoilValue(lgFilesSelectorFamily(actualProjectId));
   const locale = useRecoilValue(localeState(actualProjectId));
   const settings = useRecoilValue(settingsState(actualProjectId));
   const dialogs = useRecoilValue(dialogsSelectorFamily(actualProjectId));
@@ -89,24 +89,30 @@ const TableView: React.FC<TableViewProps> = (props) => {
   const activeDialog = dialogs.find(({ id }) => id === dialogId);
   console.log('activeDialog: ' + activeDialog?.id);
 
-  const getLgFileId = () =>
-    lgFileId
-      ? lgFiles.find(({ id }) => id === lgFileId)
-      : lgFiles.find(({ id }) => id === `${dialogId}.${defaultLanguage}`);
+  const getLgFileId = () => lgFileId || `${dialogId}.${defaultLanguage}`;
 
   useEffect(() => {
     (async () => {
-      const file = getLgFileId();
-      if (file?.isContentUnparsed) {
-        //parse, set and return
-        const lgFile = await lgWorker.parse(actualProjectId, file.id, file.content, lgFiles);
-        console.log('table-view: ', lgFile);
-        setDefaultLangFile(lgFile);
-      } else {
-        setDefaultLangFile(file as any);
-      }
+      const id = getLgFileId();
+      const lgFile = await lgWorker.get(projectId, id);
+      console.log('table-view: ', lgFile);
+      setDefaultLangFile(lgFile);
     })();
-  }, [dialogId, lgFiles, actualProjectId, lgFileId]);
+  }, [dialogId, actualProjectId, lgFileId]);
+
+  // useEffect(() => {
+  //   (async () => {
+  //     const file = getLgFileId();
+  //     if (file?.isContentUnparsed) {
+  //       //parse, set and return
+  //       const lgFile = await lgWorker.parse(actualProjectId, file.id, file.content, lgFiles);
+  //       console.log('table-view: ', lgFile);
+  //       setDefaultLangFile(lgFile);
+  //     } else {
+  //       setDefaultLangFile(file as any);
+  //     }
+  //   })();
+  // }, [dialogId, lgFiles, actualProjectId, lgFileId]);
 
   useEffect(() => {
     if (!file || isEmpty(file)) return;
