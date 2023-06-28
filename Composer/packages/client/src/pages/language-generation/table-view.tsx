@@ -52,27 +52,38 @@ const TableView: React.FC<TableViewProps> = (props) => {
   );
 
   const { languages, defaultLanguage } = settings;
-  const [defaultLg, setDefaultLg] = useRecoilState(
+  // const [defaultLangFile, setDefaultLangFile] = useRecoilState(
+  //   lgFileState({ projectId: actualProjectId, lgFileId: `${dialogId}.${defaultLanguage}` })
+  const [defaultLangFile, setDefaultLangFile] = useRecoilState(
     lgFileState({ projectId: actualProjectId, lgFileId: `${dialogId}.${defaultLanguage}` })
   );
 
-  const getDefaultLangFile = () => {
-    let lgFile: LgFile | undefined;
-    if (lgFileId) {
-      lgFile = lgFiles.find(({ id }) => id === lgFileId);
-    } else {
-      lgFile = lgFiles.find(({ id }) => id === `${dialogId}.${defaultLanguage}`);
-    }
-    if (lgFile?.isContentUnparsed) {
-      lgWorker.parse(actualProjectId, defaultLg.id, defaultLg.content, lgFiles).then((result) => {
-        setDefaultLg(result as LgFile);
-        return defaultLg;
-      });
-    }
-    return lgFile;
-  };
+  // const getDefaultLangFile = () => {
+  //   let lgFile: LgFile | undefined;
+  //   if (lgFileId) {
+  //     lgFile = lgFiles.find(({ id }) => id === lgFileId);
+  //   } else {
+  //     lgFile = lgFiles.find(({ id }) => id === `${dialogId}.${defaultLanguage}`);
+  //   }
+  //   if (lgFile?.isContentUnparsed) {
+  //     lgWorker.parse(actualProjectId, defaultLg.id, defaultLg.content, lgFiles).then((result) => {
+  //       setDefaultLg(result as LgFile);
+  //       return defaultLg;
+  //     });
+  //   }
+  //   return lgFile;
+  // };
 
-  const defaultLangFile = getDefaultLangFile();
+  // const defaultLangFile = getDefaultLangFile();
+
+  useEffect(() => {
+    (async () => {
+      const lgFile = await lgWorker.get(actualProjectId, lgFileId || `${dialogId}.${defaultLanguage}`);
+      if (lgFile) {
+        setDefaultLangFile(lgFile);
+      }
+    })();
+  }, [actualProjectId, lgFileId, dialogId, defaultLanguage]);
 
   const [templates, setTemplates] = useState<LgTemplate[]>([]);
   const listRef = useRef(null);

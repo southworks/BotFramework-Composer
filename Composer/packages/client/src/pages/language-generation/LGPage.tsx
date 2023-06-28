@@ -3,7 +3,7 @@
 
 /** @jsx jsx */
 import { jsx } from '@emotion/react';
-import React, { Fragment, useCallback, Suspense, useEffect } from 'react';
+import React, { Fragment, useCallback, Suspense, useEffect, useState } from 'react';
 import formatMessage from 'format-message';
 import { ActionButton } from '@fluentui/react/lib/Button';
 import { RouteComponentProps, Router } from '@reach/router';
@@ -28,6 +28,7 @@ const LGPage: React.FC<RouteComponentProps<{
 }>> = (props) => {
   const { dialogId = '', projectId = '', skillId, lgFileId = '' } = props;
   const actualProjectId = skillId ?? projectId;
+  const [activeFile, setActiveFile] = useState();
   const locale = useRecoilValue(localeState(actualProjectId));
   const lgFiles = useRecoilValue(lgFilesSelectorFamily(skillId ?? projectId));
   const [currentLg, setCurrentLg] = useRecoilState(
@@ -55,13 +56,20 @@ const LGPage: React.FC<RouteComponentProps<{
     return lgFile;
   };
 
-  const activeFile = getActiveFile();
+  const getLgFileId = () => (lgFileId ? `${lgFileId}.${locale}` : `${dialogId}.${locale}`);
 
   useEffect(() => {
-    if (!activeFile && lgFiles.length) {
-      navigateTo(`${baseURL}language-generation/common`);
-    }
-  }, [dialogId, lgFiles, projectId, lgFileId]);
+    (async () => {
+      const id = getLgFileId();
+      const lgFile = await lgWorker.get(projectId, id);
+      console.log('lgpage: ', lgFile);
+      // const commonPath = `${baseURL}language-generation/common`;
+      // if (!lgFile && path !== commonPath) {
+      //   navigateTo(commonPath);
+      // }
+      setActiveFile(lgFile);
+    })();
+  }, [dialogId, projectId, lgFileId]);
 
   const onToggleEditMode = useCallback(
     (_e) => {

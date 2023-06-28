@@ -16,10 +16,15 @@ import {
   LgNewCachePayload,
   LgCleanCachePayload,
   LgParseAllPayload,
+  LgGetlPayload,
 } from './types';
 
 // Wrapper class
 class LgWorker extends BaseWorker<LgActionType> {
+  get(projectId: string, id: string): Promise<any> {
+    return this.sendMsg<LgGetlPayload>(LgActionType.Get, { projectId, id });
+  }
+
   addProject(projectId: string) {
     return this.sendMsg<LgNewCachePayload>(LgActionType.NewCache, { projectId });
   }
