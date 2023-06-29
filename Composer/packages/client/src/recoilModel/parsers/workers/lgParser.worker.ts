@@ -1,11 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-import './cycle';
 import { lgUtil } from '@bfc/indexers';
 import { lgImportResolverGenerator, LgFile as LgFileOriginal } from '@bfc/shared';
 import Dexie, { Table } from 'dexie';
-import { Templates } from 'botbuilder-lg';
-import { inspect } from 'util';
 
 import {
   LgActionType,
@@ -21,8 +18,6 @@ import {
   LgParseAllPayload,
   LgGetlPayload,
 } from '../types';
-import { cloneDeep, extend } from 'lodash';
-import { Typeson } from 'typeson';
 
 import { useEffect, useRef } from 'react';
 
