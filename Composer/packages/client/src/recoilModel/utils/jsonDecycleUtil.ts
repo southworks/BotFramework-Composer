@@ -140,3 +140,66 @@ export function retrocycle($) {
   })($);
   return $;
 }
+
+function isObject(objValue) {
+  return (
+    objValue &&
+    typeof objValue === 'object' &&
+    objValue.constructor.prototype instanceof Object &&
+    !Array.isArray(objValue)
+  );
+}
+
+export function jsonParse(obj, structure: Map<string, object>) {
+  //const structure = new Map<string, object>();
+  const process = (obj) => {
+    const result: any = {};
+    if (isObject(obj)) {
+      result.className = obj.constructor.name;
+    }
+    const methods = Object.getPrototypeOf(obj);
+    const props = Object.getOwnPropertyNames(obj);
+    structure.set(obj.constructor.name, methods);
+    for (const propName of props) {
+      const prop = obj[propName];
+      if (typeof prop !== 'object') {
+        result[propName] = prop;
+      } else if (Array.isArray(prop)) {
+        result[propName] = prop.map(process);
+      } else {
+        if (structure.has(prop.constructor.name)) {
+          //no-op
+        } else {
+          const methods = Object.getPrototypeOf(prop);
+          structure.set(prop.constructor.name, methods);
+          result[propName] = process(prop);
+        }
+      }
+    }
+    return result;
+  };
+  return process(obj);
+}
+
+export function jsonRevive(obj, structure: Map<string, object>) {
+  const { __className__, ...rest } = obj;
+  let result = {};
+  //const structure = new Map<string, object>();
+  if (structure.has(__className__)) {
+    const methods = structure.get(__className__) ?? null;
+    result = Object.create(methods);
+  }
+
+  const props = Object.getOwnPropertyNames(rest);
+  for (const propName of props) {
+    const prop = obj[propName];
+    if (isObject(prop)) {
+      result[propName] = jsonRevive(prop, structure);
+    } else if (Array.isArray(prop)) {
+      result[propName] = prop.map((prop) => jsonRevive(prop, structure));
+    } else {
+      result[propName] = prop;
+    }
+  }
+  return result;
+}

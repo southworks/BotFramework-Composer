@@ -2,8 +2,11 @@
 // Licensed under the MIT License.
 import { lgUtil } from '@bfc/indexers';
 import { lgImportResolverGenerator, LgFile } from '@bfc/shared';
+import { Typeson } from 'typeson';
+import { plainToInstance } from 'class-transformer';
+import 'reflect-metadata';
 
-import { decycle, retrocycle } from '../../utils/jsonDecycleUtil';
+import { decycle, retrocycle, jsonParse, jsonRevive } from '../../utils/jsonDecycleUtil';
 import {
   LgActionType,
   LgParsePayload,
@@ -18,7 +21,8 @@ import {
   LgParseAllPayload,
   LgGetlPayload,
 } from '../types';
-import { IndexedDBCache, Project } from '../../persistence/indexerDBcache';
+import { IndexedDBCache } from '../../persistence/indexerDBcache';
+import { Templates } from '../../utils/Templates';
 
 const ctx: Worker = self as any;
 
@@ -116,8 +120,15 @@ const lgFileResolver = (lgFiles) => {
 export class LgCache {
   // use projectId to support multiple bots.
   projects: Map<string, LgResources> = new Map();
+  parseResult: Templates = new Templates();
 
   public db: IndexedDBCache;
+
+  public TSON = new Typeson().register({
+    Templates,
+  });
+
+  public structure = new Map<string, object>();
 
   constructor() {
     this.db = new IndexedDBCache();
@@ -126,8 +137,8 @@ export class LgCache {
   //public set(projectId: string, value: LgFile) {
   async set(projectId: string, value: LgFile) {
     console.log('parserWorker-set: get');
-    const project = await this.db.projects.get(projectId);
-    const lgResources = project.lgResources;
+    const lgResources = await this.db.projects.get(projectId);
+    //const lgResources = project?.lgResources;
 
     //if (!lgResources) return;
     console.log('parserWorker-set: lgResources.set');
@@ -135,7 +146,7 @@ export class LgCache {
 
     // update reference resource
     const updatedResource = value.parseResult;
-    lgResources.forEach((lgResource) => {
+    lgResources.forEach(async (lgResource) => {
       if (lgResource.parseResult) {
         //lgResource.parseResult = '';
         if (!lgResource.parseResult.references) {
@@ -147,8 +158,18 @@ export class LgCache {
         });
         //const stringResult = this.stringifyResults(lgResource.parseResult);
         //const stringResult = JSON.stringify(lgResource.parseResult, decycle());
-        const stringResult = JSON.parse(JSON.stringify(decycle(lgResource.parseResult, undefined)));
-        lgResource.parseResult = stringResult;
+        //const encapsulatedParseResult = this.TSON.encapsulate(lgResource.parseResult);
+        console.log('lgResource.parseResult:');
+        console.dir(lgResource.parseResult);
+        const decycledJson = decycleJson(lgResource.parseResult);
+        console.log('decycledJson:');
+        console.dir(decycledJson);
+        const parsedResult = parse(decycledJson);
+        console.log('parsedResult:');
+        console.dir(parsedResult);
+        //const stringResult = JSON.parse(JSON.stringify(decycle(lgResource.parseResult, undefined)));
+        lgResource.parseResult = '';
+        await this.db.parseResult.put(JSON.parse(JSON.stringify(parsedResult)), lgResource.id);
         console.log('parserResult stringified');
       }
     });
@@ -215,6 +236,17 @@ export class LgCache {
     }
   }
 
+  async getResults(file: LgFile) {
+    const result = await this.db.parseResult.get(file.id);
+    //const retroLgFile = retrocycle(result);
+    const revivedResult = revive(result);
+    //const resultTemplate = plainToInstance(Templates, result, { enableImplicitConversion: true });
+    //const references = plainToInstance(Templates, resultTemplate.references, { enableImplicitConversion: true });
+    //resultTemplate.references = references;
+    //return this.TSON.revive(result);
+    return revivedResult;
+  }
+
   async getMany(projectId: string, filter?: (obj: any) => boolean) {
     const result = await this.db.projects
       .filter((val) => (val.id === projectId && filter ? filter(val) : true))
@@ -222,7 +254,16 @@ export class LgCache {
     if (result.length === null) {
       return Array.from(result, ([name, value]) => value);
     }
-    return result;
+    const result2 = async (result) => {
+      for (let i = 0; i < result.size; i++) {
+        if (!result.entries[i].isContentUnparsed) {
+          const results = await this.getResults(result.entries[i]);
+          result.entries[i].parseResult = results;
+        }
+      }
+      return result;
+    };
+    return result2(result[0]);
   }
 
   async removeProject(projectId: string) {
@@ -263,8 +304,8 @@ const getTargetFile = async (projectId: string, lgFile: LgFile, lgFiles: LgFile[
     //return filterParseResult(lgFile);
     return lgFile;
   }
-  const retroLgFile = retrocycle(cachedFile.parseResult);
-  cachedFile.parseResult = retroLgFile;
+  // const retroLgFile = retrocycle(cachedFile.parseResult);
+  // cachedFile.parseResult = retroLgFile;
   //cachedFile.parseResult = retroLgFile;
   // const updatedResource = cachedFile.parseResult;
   // lgFiles.forEach((lgResource) => {
@@ -359,6 +400,9 @@ export const handleMessage = async (msg: LgMessageEvent) => {
     case LgActionType.AddTemplate: {
       const { lgFile, template, lgFiles, projectId } = msg.payload;
       const target = await getTargetFile(projectId, lgFile, lgFiles);
+      const parsedResult = await cache.getResults(lgFile);
+      //const retroLgFile = retrocycle(parseResult);
+      target.parseResult = parsedResult;
       const result = lgUtil.addTemplate(target, template, lgFileResolver(lgFiles));
       await cache.set(projectId, result);
       payload = filterParseResult(result);
@@ -379,12 +423,11 @@ export const handleMessage = async (msg: LgMessageEvent) => {
 
     case LgActionType.UpdateTemplate: {
       const { lgFile, templateName, template, lgFiles, projectId } = msg.payload;
-      const result = lgUtil.updateTemplate(
-        await getTargetFile(projectId, lgFile, lgFiles),
-        templateName,
-        template,
-        lgFileResolver(lgFiles)
-      );
+      const target = await getTargetFile(projectId, lgFile, lgFiles);
+      const parseResult = await cache.getResults(lgFile);
+      const retroLgFile = retrocycle(parseResult);
+      target.parseResult = retroLgFile;
+      const result = lgUtil.updateTemplate(target, templateName, template, lgFileResolver(lgFiles));
       await cache.set(projectId, result);
       payload = filterParseResult(result);
       break;
@@ -441,3 +484,81 @@ ctx.onmessage = async function (event) {
     ctx.postMessage({ id: msg.id, error: error.message });
   }
 };
+
+function decycleJson(obj) {
+  const seen = new WeakSet();
+  const nullify = (obj) => {
+    if (typeof obj === 'object' && obj !== null) {
+      if (seen.has(obj)) {
+        return null;
+      }
+      seen.add(obj);
+      Object.keys(obj).forEach((key) => {
+        obj[key] = nullify(obj[key]);
+      });
+    }
+    return obj;
+  };
+  return nullify(obj);
+}
+
+function isObject(objValue) {
+  return objValue && typeof objValue === 'object' && !Array.isArray(objValue);
+}
+
+const structure = new Map<string, object>();
+
+function parse(obj) {
+  const process = (obj) => {
+    if (!obj) {
+      return;
+    }
+    const result: any = {};
+    if (isObject(obj)) {
+      // eslint-disable-next-line no-underscore-dangle
+      result.__className__ = obj.constructor.name;
+    }
+    const methods = Object.getPrototypeOf(obj);
+    const props = Object.getOwnPropertyNames(obj);
+    structure.set(obj.constructor.name, methods);
+    for (const propName of props) {
+      const prop = obj[propName];
+      if (isObject(prop)) {
+        if (structure.has(prop.constructor.name)) {
+          //no-op
+        } else {
+          const methods = Object.getPrototypeOf(prop);
+          structure.set(prop.constructor.name, methods);
+        }
+        result[propName] = process(prop);
+      } else if (Array.isArray(prop)) {
+        result[propName] = prop.map(process);
+      } else {
+        result[propName] = prop;
+      }
+    }
+    return result;
+  };
+  return process(obj);
+}
+function revive(obj) {
+  let result = {};
+  // eslint-disable-next-line no-underscore-dangle
+  if (structure.has(obj.__className__)) {
+    // eslint-disable-next-line no-underscore-dangle
+    const methods = structure.get(obj.__className__)!;
+    result = Object.create(methods);
+  }
+  const props = Object.getOwnPropertyNames(obj).filter((e) => e !== '__className__');
+  for (const propName of props) {
+    const prop = obj[propName];
+    if (isObject(prop)) {
+      result[propName] = revive(prop);
+    } else if (Array.isArray(prop)) {
+      result[propName] = prop.map(revive);
+    } else {
+      result[propName] = prop;
+    }
+  }
+  return result;
+}
