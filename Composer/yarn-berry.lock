@@ -3693,6 +3693,7 @@ __metadata:
     eslint-config-react-app: 5.2.1
     eslint-loader: 4.0.0
     file-loader: 4.2.0
+    flatted: 3.2.7
     format-message: 6.2.4
     format-message-cli: 6.2.4
     format-message-generate-id: ^6.2.3
@@ -3700,6 +3701,7 @@ __metadata:
     html-webpack-plugin: 4.0.0-beta.8
     immer: ^9.0.6
     jest-websocket-mock: ^2.2.0
+    json-cycle: 1.5.0
     jsonwebtoken: ^9.0.0
     jszip: ^3.8.0
     jwt-decode: ^2.2.0
@@ -15697,6 +15699,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"flatted@npm:3.2.7":
+  version: 3.2.7
+  resolution: "flatted@npm:3.2.7"
+  checksum: 427633049d55bdb80201c68f7eb1cbd533e03eac541f97d3aecab8c5526f12a20ccecaeede08b57503e772c769e7f8680b37e8d482d1e5f8d7e2194687f9ea35
+  languageName: node
+  linkType: hard
+
 "flatted@npm:^2.0.0":
   version: 2.0.2
   resolution: "flatted@npm:2.0.2"
@@ -19400,6 +19409,13 @@ __metadata:
   version: 3.0.0
   resolution: "json-buffer@npm:3.0.0"
   checksum: 0cecacb8025370686a916069a2ff81f7d55167421b6aa7270ee74e244012650dd6bce22b0852202ea7ff8624fce50ff0ec1bdf95914ccb4553426e290d5a63fa
+  languageName: node
+  linkType: hard
+
+"json-cycle@npm:1.5.0":
+  version: 1.5.0
+  resolution: "json-cycle@npm:1.5.0"
+  checksum: 0a44cd349676c6726093c64283fb75402f9104b32325b06c9270af6d639e7caac419f5301a39298aef2ac1659b273b167e02bd622e628c3392cf86f0e77a9f78
   languageName: node
   linkType: hard
 

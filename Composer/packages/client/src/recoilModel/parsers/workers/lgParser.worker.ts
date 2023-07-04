@@ -3,6 +3,11 @@
 import { lgUtil } from '@bfc/indexers';
 import { lgImportResolverGenerator, LgFile as LgFileOriginal } from '@bfc/shared';
 import Dexie, { Table } from 'dexie';
+import * as Flatted from 'flatted';
+
+const { v4: uuidv4 } = require('uuid');
+
+uuidv4();
 
 import {
   LgActionType,
@@ -20,6 +25,7 @@ import {
 } from '../types';
 
 import { useEffect, useRef } from 'react';
+import { cloneDeep } from 'lodash';
 
 export default function useOnChange<T>(value: T, effect: (prev: T, next: T) => void) {
   const latestValue = useRef(value);
@@ -213,19 +219,30 @@ function revive(obj) {
   return result;
 }
 
+const decycledObject = new Map<object, string>();
+
 function decycle(obj) {
   let i = 0;
   const seen = new WeakSet();
   const nullify = (obj) => {
     if (typeof obj === 'object' && obj !== null) {
       if (seen.has(obj)) {
-        return null;
+        // const key = Array.from(decycledObject).find(([k, v]) => v == obj)?.[0];
+        // if (key) {
+        //   return key;
+        // }
+        return decycledObject.get(obj);
       }
       seen.add(obj);
-      structure.set(`__decycle__${i++}__`, obj);
+      decycledObject.set(obj, obj?.constructor.name + '_' + uuidv4());
+      // if (obj?.constructor.name.startsWith('ANT')) {
+      // decycledObject.set(obj?.constructor.name + '_' + uuidv4(), obj);
+      // }
       Object.keys(obj).forEach((key) => {
         obj[key] = nullify(obj[key]);
       });
+      console.log(i);
+      i++;
     }
     return obj;
   };
@@ -233,23 +250,42 @@ function decycle(obj) {
 }
 
 function retrocycle(obj) {
-  let result = {};
-
-  const props = Object.getOwnPropertyNames(obj);
-  for (let propName of props) {
-    const prop = obj[propName];
-    if (isObject(prop)) {
-      result[propName] = retrocycle(prop);
-    } else if (Array.isArray(prop)) {
-      result[propName] = prop.map(retrocycle);
-    } else if (structure.has(obj)) {
-      result[propName] = structure.get(obj);
-    } else {
-      result[propName] = prop;
+  const decycled = Array.from(decycledObject);
+  const process = (obj) => {
+    if (!obj) {
+      return obj;
     }
-  }
+    let result = {};
 
-  return result;
+    const props = Object.getOwnPropertyNames(obj);
+    for (let propName of props) {
+      const prop = obj[propName];
+      if (decycled.some((e) => e[1] == prop)) {
+        result[propName] = decycled.find((e) => e[1] == prop)?.[0];
+      } else if (isObject(prop)) {
+        result[propName] = process(prop);
+      } else if (Array.isArray(prop)) {
+        result[propName] = prop.map(process);
+      } else {
+        result[propName] = prop;
+      }
+    }
+
+    return result;
+  };
+
+  return process(obj);
+}
+
+class RecursiveMap extends Map {
+  static fromJSON(val) {
+    return new this(Flatted.fromJSON(val));
+  }
+  toJSON() {
+    const s = Flatted.toJSON([...this.entries()]);
+    console.dir(s);
+    return s;
+  }
 }
 
 export class LgCache {
@@ -268,8 +304,55 @@ export class LgCache {
     this.db = new IndexedDBCache();
 
     this.db.files.hook('reading', (file) => {
-      const result = revive(file);
-      return result;
+      if (file?.parseResult) {
+        // const restored = retrocycle(file);
+        // file.parseResult = RecursiveMap.fromJSON(file.parseResult).get('parseResult');
+        const Primitive = String; // it could be Number
+        const primitive = 'string'; // it could be 'number'
+
+        const primitives = (value) => (value instanceof Primitive ? Primitive(value) : value);
+
+        const Primitives = (_, value) => (typeof value === primitive ? new Primitive(value) : value);
+
+        const input = JSON.parse(file.parseResult, Primitives).map(primitives);
+        const nf = (obj) => {
+          if (obj instanceof Primitive) {
+            obj = input[obj as any];
+          } else if (obj?.__className__ instanceof Primitive) {
+            obj.__className__ = input[obj?.__className__];
+          }
+
+          if (structure.has(obj?.__className__)) {
+            const methods = structure.get(obj.__className__)!;
+            const result = Object.create(methods);
+            const props = Object.getOwnPropertyNames(obj).filter((e) => e !== '__className__');
+            // const props = Object.getOwnPropertyNames(obj);
+            for (let propName of props) {
+              const prop = obj[propName];
+              result[propName] = prop;
+              if (isObject(prop)) {
+                result[propName] = nf(prop);
+              } else if (Array.isArray(prop)) {
+                result[propName] = prop.map(nf);
+              } else {
+                result[propName] = prop;
+              }
+            }
+            // console.dir(result);
+            return result;
+          }
+
+          return obj;
+        };
+
+        file.parseResult = (Flatted.parse as any)(file.parseResult, (key, val, s) => {
+          return nf(val);
+        });
+        // const result = revive(file);
+        return file;
+      }
+
+      return file;
     });
     this.db.files.hook('deleting', (key, file) => {
       this.fileState.delete(this.lgFileId(file.projectId, file.id));
@@ -277,33 +360,53 @@ export class LgCache {
   }
 
   async set(projectId: string, value: LgFileOriginal) {
-    const lgResources = await this.db.files.where({ projectId }).toArray();
+    // const lgResources = await this.db.files.where({ projectId }).toArray();
 
-    if (!lgResources) return;
+    // if (!lgResources) return;
 
     // update reference resource
     const collection: LgFile[] = [];
-    console.dir(lgResources);
-    lgResources.forEach((lgResource) => {
-      if (lgResource.parseResult) {
-        lgResource.parseResult.references = lgResource.parseResult.references.map((ref) => {
-          return ref.id === value.id ? value.parseResult : ref;
-        });
-        collection.push({ ...lgResource, projectId });
-      }
-    });
+    // lgResources.forEach((lgResource) => {
+    //   if (lgResource.parseResult) {
+    //     lgResource.parseResult.references = lgResource.parseResult.references.map((ref) => {
+    //       return ref.id === value.id ? value.parseResult : ref;
+    //     });
+    //     collection.push({ ...lgResource, projectId });
+    //   }
+    // });
 
-    const decycled = decycle(value);
-    collection.push({ ...decycled, projectId });
-    const result = collection.map((e) => {
-      const parsed = parse(e);
-      return JSON.parse(JSON.stringify(parsed));
+    // const recursive = new RecursiveMap();
+    // recursive.set('parseResult', value.parseResult);
+    // var cloned = cloneDeep(value);
+    structure.clear();
+    const asString = Flatted.stringify(value.parseResult, (key, val) => {
+      if (isObject(val)) {
+        val.__className__ = val.constructor.name + '_' + uuidv4();
+        const methods = Object.getPrototypeOf(val);
+        const props = Object.getOwnPropertyNames(val);
+        for (let propName of props) {
+          const prop = val[propName];
+          if (typeof prop === 'function') {
+            methods[propName] = prop;
+          }
+        }
+
+        structure.set(val.__className__, methods);
+      }
+      return val;
     });
-    await this.db.files.bulkPut(result);
-    console.log(
-      'IndexedDB LGFiles saved: ',
-      result.map((e) => ({ id: e.id, projectId: e.projectId }))
-    );
+    // const asString = JSON.stringify(recursive);
+    // value.parseResult = JSON.parse(asString);
+    collection.push({ ...value, projectId, parseResult: asString });
+    // const result = collection.map((e) => {
+    //   const parsed = parse(e);
+    //   return JSON.parse(JSON.stringify(parsed));
+    // });
+    await this.db.files.bulkPut(collection);
+    // console.log(
+    //   'IndexedDB LGFiles saved: ',
+    //   collection.map((e) => ({ id: e.id, projectId: e.projectId }))
+    // );
   }
 
   async setProject(projectId: string, lgResources: LgFile[]) {
@@ -316,6 +419,7 @@ export class LgCache {
   async get(projectId: string, id: string): Promise<LgFile> {
     const lgFile = await this.db.files.where({ projectId, id }).first();
     if (lgFile?.isContentUnparsed === false) {
+      this.loadReferences(projectId, lgFile);
       return lgFile!;
     }
 
@@ -330,6 +434,7 @@ export class LgCache {
     const lgFiles = await cache.getByProjectId(projectId);
     const parsed = lgUtil.parse(lgFile!.id, lgFile!.content, lgFiles);
     await cache.set(projectId, parsed);
+    this.loadReferences(projectId, parsed);
     this.fileState.set(this.lgFileId(projectId, id), this.FILE_STATE.PARSED);
 
     return { ...parsed, projectId };
@@ -358,6 +463,20 @@ export class LgCache {
   }
 
   private lgFileId = (projectId: string, id: string) => `${projectId}.${id}`;
+
+  private async loadReferences(projectId: string, file: LgFile | LgFileOriginal) {
+    const refs = file.parseResult?.references?.map((ref) => ref.id);
+    if (!refs?.length) {
+      return;
+    }
+
+    const lgResources = await this.getByProjectId(projectId, (e) => refs.includes(e.id));
+    if (!lgResources) return;
+
+    file.parseResult.references = file.parseResult.references.map(
+      (ref) => lgResources.find((e) => e.id === ref.id)?.parseResult || ref
+    );
+  }
 }
 
 // cache the lg parse result. For updateTemplate function,
