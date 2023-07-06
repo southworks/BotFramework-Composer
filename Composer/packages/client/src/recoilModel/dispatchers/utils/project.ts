@@ -83,6 +83,7 @@ import {
   showWarningDiagnosticsState,
 } from '../../atoms';
 import * as botstates from '../../atoms/botState';
+import lgWorker2 from '../../parsers/lgDiagnosticWorker';
 import lgWorker from '../../parsers/lgWorker';
 import luWorker from '../../parsers/luWorker';
 import qnaWorker from '../../parsers/qnaWorker';
@@ -305,6 +306,7 @@ const parseAllAssets = async ({ set }: CallbackInterface, projectId: string, bot
     luWorker.parseAll(luFiles, luFeaturesMap),
     qnaWorker.parseAll(qnaFiles),
   ]);
+  lgWorker2.parseAll(parsedLgFiles as LgFile[]);
 
   // migrate script move qna pairs in *.qna to *-manual.source.qna.
   const locales = mergedSettings.languages;

@@ -10,7 +10,7 @@ const ctx: Worker = self as any;
 interface ParseMessage {
   id: string;
   type: LgActionType.Parse;
-  payload: LgParsePayload;
+  payload: any;
 }
 
 type LgMessageEvent = ParseMessage;
@@ -29,12 +29,25 @@ export const handleMessage = (msg: LgMessageEvent) => {
   return filterParseResult(lgFile);
 };
 
-ctx.onmessage = function (event) {
+ctx.onmessage = async function (event) {
   const msg = event.data as LgMessageEvent;
 
   try {
-    const payload = handleMessage(msg);
-    ctx.postMessage({ id: msg.id, payload });
+    if (msg.id == null) {
+      const lgFiles = msg.payload.chunks.map((e) => {
+        return new Promise((res) => {
+          setTimeout(() => {
+            const lgFile = lgUtil.parse(e.id, e.content, msg.payload.lgFiles);
+            res(filterParseResult(lgFile));
+          }, 0);
+        });
+      });
+      const payload = await Promise.all(lgFiles);
+      ctx.postMessage({ id: msg.id, payload });
+    } else {
+      const payload = handleMessage(msg);
+      ctx.postMessage({ id: msg.id, payload });
+    }
   } catch (error) {
     ctx.postMessage({ id: msg.id, error: error.message });
   }
