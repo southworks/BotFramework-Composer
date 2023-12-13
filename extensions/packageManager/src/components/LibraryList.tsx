@@ -100,7 +100,9 @@ export const LibraryList: React.FC<ILibraryListProps> = (props) => {
       onRender: (item: LibraryRef) => {
         return (
           <Fragment>
-            <span style={{ display: 'block', fontWeight: 'bold', lineHeight: '150%' }}>{item.name}</span>
+            <span aria-label={item.name} style={{ display: 'block', fontWeight: 'bold', lineHeight: '150%' }}>
+              {item.name}
+            </span>
             <span>{item.description}</span>
           </Fragment>
         );
