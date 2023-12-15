@@ -36,7 +36,7 @@ import { v4 as uuid } from 'uuid';
 import isEmpty from 'lodash/isEmpty';
 
 import { checkIfDotnetVersionMissing, checkIfFunctionsMissing } from '../../../utils/runtimeErrors';
-import { BASEURL, BotStatus } from '../../../constants';
+import { BotStatus } from '../../../constants';
 import settingStorage from '../../../utils/dialogSettingStorage';
 import { getUniqueName } from '../../../utils/fileUtil';
 import httpClient from '../../../utils/httpUtil';
