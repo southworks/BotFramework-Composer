@@ -102,6 +102,7 @@ import { getPublishProfileFromPayload } from '../../../utils/electronUtil';
 
 import { crossTrainConfigState, projectIndexingState } from './../../atoms/botState';
 import { recognizersSelectorFamily } from './../../selectors/recognizers';
+import { CancelToken } from 'axios';
 
 export const resetBotStates = ({ reset }: CallbackInterface, projectId: string) => {
   const botStates = Object.keys(botstates);
@@ -911,7 +912,7 @@ export const checkIfBotExistsInBotProjectFile = async (
   return false;
 };
 
-export const getMemoryVariables = async (projectId: string, options?: { signal: AbortSignal }) => {
-  const res = await httpClient.get(`/projects/${projectId}/variables`, { signal: options?.signal });
+export const getMemoryVariables = async (projectId: string, options?: { cancelToken: CancelToken }) => {
+  const res = await httpClient.get(`/projects/${projectId}/variables`, { cancelToken });
   return res?.data?.variables ?? [];
 };

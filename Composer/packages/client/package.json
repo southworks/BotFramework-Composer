@@ -53,7 +53,7 @@
     "@geoffcox/react-splitter": "^2.0.3",
     "@reach/router": "1.2.1",
     "ansi_up": "5.0.0",
-    "axios": "^0.22.0",
+    "axios": "^0.21.1",
     "babel-plugin-extract-format-message": "^6.2.3",
     "botframework-webchat": "^4.15.6",
     "botframework-webchat-core": "^4.15.6",

@@ -20,7 +20,7 @@
     "watch": "yarn build:ts --watch"
   },
   "peerDependencies": {
-    "axios": "^0.22.0",
+    "axios": "^0.21.1",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "tslib": "2.4.0"
