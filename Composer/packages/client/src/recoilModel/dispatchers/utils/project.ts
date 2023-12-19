@@ -913,6 +913,6 @@ export const checkIfBotExistsInBotProjectFile = async (
 };
 
 export const getMemoryVariables = async (projectId: string, options?: { cancelToken: CancelToken }) => {
-  const res = await httpClient.get(`/projects/${projectId}/variables`, { cancelToken });
+  const res = await httpClient.get(`/projects/${projectId}/variables`, { cancelToken: options?.cancelToken });
   return res?.data?.variables ?? [];
 };
