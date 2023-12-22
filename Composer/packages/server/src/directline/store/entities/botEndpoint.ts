@@ -21,7 +21,7 @@ export class BotEndpoint {
     public botUrl: string,
     public msaAppId?: string,
     public msaPassword?: string
-  ) {}
+  ) { }
 
   private async getAccessToken(forceRefresh = false): Promise<string | undefined> {
     try {
@@ -56,15 +56,15 @@ export class BotEndpoint {
       // Subtract 5 minutes from expires_in so they'll we'll get a new token before it expires.
       const oauthResponse = await resp.data;
 
-      this.accessToken = oauthResponse.access_token;
-      this.accessTokenExpires = Date.now() + oauthResponse.expires_in * 1000;
+      this.accessToken = oauthResponse['access_token'];
+      this.accessTokenExpires = Date.now() + oauthResponse['expires_in'] * 1000;
 
       return this.accessToken;
     } catch (ex) {
       const response: AxiosResponse = ex.response;
       const err: DirectLineError = {
         status: response.status,
-        details: response.data.error_description,
+        details: response.data['error_description'],
         message: formatMessage('An error occurred validating the Microsoft App Id and Microsoft App Password.'),
       };
       throw err;

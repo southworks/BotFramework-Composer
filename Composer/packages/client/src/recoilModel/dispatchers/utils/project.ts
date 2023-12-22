@@ -34,6 +34,7 @@ import { stringify } from 'query-string';
 import { CallbackInterface } from 'recoil';
 import { v4 as uuid } from 'uuid';
 import isEmpty from 'lodash/isEmpty';
+import { } from 'axios';
 
 import { checkIfDotnetVersionMissing, checkIfFunctionsMissing } from '../../../utils/runtimeErrors';
 import { BASEURL, BotStatus } from '../../../constants';
@@ -912,7 +913,6 @@ export const checkIfBotExistsInBotProjectFile = async (
 };
 
 export const getMemoryVariables = async (projectId: string, options?: { signal: AbortSignal }) => {
-  const res = await fetch(`${BASEURL}/projects/${projectId}/variables`, { signal: options?.signal });
-  const json = (await res.json()) as { variables: string[] };
-  return json.variables ?? [];
+  const res = await httpClient.get(`/projects/${projectId}/variables`, { signal: options?.signal });
+  return res?.data?.variables ?? [];
 };

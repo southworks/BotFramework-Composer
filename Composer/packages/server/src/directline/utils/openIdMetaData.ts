@@ -25,7 +25,7 @@ export class OpenIdMetadata {
   private lastUpdated = 0;
   private keys: Key[] = [];
 
-  constructor(public url: string) {}
+  constructor(public url: string) { }
 
   public async getKey(keyId: string): Promise<string | null> {
     // If keys are more than 5 days old, refresh them
@@ -55,7 +55,7 @@ export class OpenIdMetadata {
     }
 
     this.lastUpdated = new Date().getTime();
-    this.keys = keysResponse.data.keys as Key[];
+    this.keys = keysResponse.data['keys'] as Key[];
   }
 
   private findKey(keyId: string): string | null {

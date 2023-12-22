@@ -288,8 +288,8 @@ const Library: React.FC = () => {
         try {
           getReadmeAPI(selectedItem.name).then((res) => {
             // TODO: also process available versions, should be in payload
-            if (res.data.readme) {
-              setReadmeContent(res.data.readme);
+            if (res.data['readme']) {
+              setReadmeContent(res.data['readme']);
             } else {
               setReadmeContent(selectedItem.description);
             }
@@ -424,7 +424,7 @@ const Library: React.FC = () => {
       const results = await installComponentAPI(currentProjectId, packageName, version, isUpdating, source);
 
       // check to see if there was a conflict that requires confirmation
-      if (results.data.success === false) {
+      if (results.data['success'] === false) {
         telemetryClient.track('PackageInstallConflictFound', {
           package: packageName,
           version: version,
@@ -444,13 +444,13 @@ const Library: React.FC = () => {
       } else {
         telemetryClient.track('PackageInstalled', { package: packageName, version: version, isUpdate: isUpdating });
         setWorking('');
-        updateInstalledComponents(results.data.components);
+        updateInstalledComponents(results.data['components']);
 
         await reloadProject();
 
         // find newly installed item
         // and pop up the readme if one exists.
-        const newItem = results.data.components.find((i) => i.name === packageName);
+        const newItem = results.data['components']?.find((i) => i.name === packageName);
         if (newItem?.readme) {
           setSelectedItem(newItem);
           setReadmeHidden(false);
@@ -490,13 +490,13 @@ const Library: React.FC = () => {
 
         const response = await getSearchResults();
         // if we are searching, apply a local filter
-        response.data.available = response.data.available.filter(applySearchTerm);
-        updateAvailableLibraries(response.data.available);
-        setRecentlyUsed(response.data.recentlyUsed);
+        response.data.available = response.data['available'].filter(applySearchTerm);
+        updateAvailableLibraries(response.data['available']);
+        setRecentlyUsed(response.data['recentlyUsed']);
       } else {
         const response = await getLibraryAPI();
-        updateAvailableLibraries(response.data.available);
-        setRecentlyUsed(response.data.recentlyUsed);
+        updateAvailableLibraries(response.data['available']);
+        setRecentlyUsed(response.data['recentlyUsed']);
       }
     } catch (err) {
       setApplicationLevelError({
@@ -515,7 +515,7 @@ const Library: React.FC = () => {
       try {
         updateInstalledComponents([]);
         const response = await getInstalledComponentsAPI(currentProjectId);
-        updateInstalledComponents(response.data.components);
+        updateInstalledComponents(response.data['components']);
       } catch (err) {
         setApplicationLevelError({
           status: err.response.status,
@@ -547,12 +547,12 @@ const Library: React.FC = () => {
           stopBot(currentProjectId);
           const results = await uninstallComponentAPI(currentProjectId, selectedItem.name);
 
-          if (results.data.success) {
+          if (results.data['success']) {
             telemetryClient.track('PackageUninstalled', { package: selectedItem.name });
 
-            updateInstalledComponents(results.data.components);
+            updateInstalledComponents(results.data['components']);
           } else {
-            throw new Error(results.data.message);
+            throw new Error(results.data['message']);
           }
 
           // reload modified content
@@ -601,6 +601,8 @@ const Library: React.FC = () => {
       feeds,
     });
 
+    //Ignore TypeScript validation for the next line
+    // @ts-ignore
     // update the list of feeds in the component state
     updateFeeds(response.data);
   };

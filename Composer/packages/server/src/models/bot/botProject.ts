@@ -369,6 +369,8 @@ export class BotProject implements IBotProject {
       const writer = fs.createWriteStream(`${dirToSchema}/sdk.schema`);
 
       await new Promise((resolve, reject) => {
+        //Ignore TypeScript validation for the next line
+        // @ts-ignore
         response.data.pipe(writer);
         let error;
         writer.on('error', (err) => {

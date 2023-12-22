@@ -129,7 +129,7 @@ export class AzureBotServiceProvider extends ExternalContentProvider<AzureBotSer
       const result = await axios.default.get(vaultUri, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      return result.data.value;
+      return result.data['value'];
     } catch (e) {
       throw `Error while trying to get key vault value ${e.toString()}`;
     }
