@@ -489,8 +489,10 @@ const Library: React.FC = () => {
         telemetryClient.track('PackageSearch', { term: searchTerm });
 
         const response = await getSearchResults();
+        //Ignore TypeScript validation for the next line
+        // @ts-ignore
         // if we are searching, apply a local filter
-        response.data.available = response.data['available'].filter(applySearchTerm);
+        response.data.available = response.data.available.filter(applySearchTerm);
         updateAvailableLibraries(response.data['available']);
         setRecentlyUsed(response.data['recentlyUsed']);
       } else {
