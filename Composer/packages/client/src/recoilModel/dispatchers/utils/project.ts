@@ -912,7 +912,9 @@ export const checkIfBotExistsInBotProjectFile = async (
   return false;
 };
 
-export const getMemoryVariables = async (projectId: string, options?: { cancelToken: CancelToken }) => {
-  const res = await httpClient.get(`/projects/${projectId}/variables`, { cancelToken: options?.cancelToken });
-  return res?.data?.variables ?? [];
+export const getMemoryVariables = async (projectId: string, options?: { signal: AbortSignal }) => {
+  const fetchHeaders = { 'X-CSRF-Token': ((window as unknown) as { __csrf__: string }).__csrf__ };
+  const res = await fetch(`${BASEURL}/projects/${projectId}/variables`, { headers: fetchHeaders, signal: options?.signal });
+  const json = (await res.json()) as { variables: string[] };
+  return json.variables ?? [];
 };
