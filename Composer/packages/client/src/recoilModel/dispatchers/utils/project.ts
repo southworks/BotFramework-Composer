@@ -36,7 +36,7 @@ import { v4 as uuid } from 'uuid';
 import isEmpty from 'lodash/isEmpty';
 
 import { checkIfDotnetVersionMissing, checkIfFunctionsMissing } from '../../../utils/runtimeErrors';
-import { BotStatus } from '../../../constants';
+import { BASEURL, BotStatus } from '../../../constants';
 import settingStorage from '../../../utils/dialogSettingStorage';
 import { getUniqueName } from '../../../utils/fileUtil';
 import httpClient from '../../../utils/httpUtil';
@@ -913,7 +913,7 @@ export const checkIfBotExistsInBotProjectFile = async (
 
 export const getMemoryVariables = async (projectId: string, options?: { signal: AbortSignal }) => {
   // eslint-disable-next-line no-underscore-dangle
-  const fetchHeaders = { 'X-CSRF-Token': ((window as unknown) as { __csrf__: string }).__csrf__ };
+  const fetchHeaders = { 'X-CSRF-Token': window.__csrf__ };
   const res = await fetch(`${BASEURL}/projects/${projectId}/variables`, {
     headers: fetchHeaders,
     signal: options?.signal,
