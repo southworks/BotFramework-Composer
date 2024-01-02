@@ -102,7 +102,6 @@ import { getPublishProfileFromPayload } from '../../../utils/electronUtil';
 
 import { crossTrainConfigState, projectIndexingState } from './../../atoms/botState';
 import { recognizersSelectorFamily } from './../../selectors/recognizers';
-import { CancelToken } from 'axios';
 
 export const resetBotStates = ({ reset }: CallbackInterface, projectId: string) => {
   const botStates = Object.keys(botstates);
@@ -913,8 +912,12 @@ export const checkIfBotExistsInBotProjectFile = async (
 };
 
 export const getMemoryVariables = async (projectId: string, options?: { signal: AbortSignal }) => {
+  // eslint-disable-next-line no-underscore-dangle
   const fetchHeaders = { 'X-CSRF-Token': ((window as unknown) as { __csrf__: string }).__csrf__ };
-  const res = await fetch(`${BASEURL}/projects/${projectId}/variables`, { headers: fetchHeaders, signal: options?.signal });
+  const res = await fetch(`${BASEURL}/projects/${projectId}/variables`, {
+    headers: fetchHeaders,
+    signal: options?.signal,
+  });
   const json = (await res.json()) as { variables: string[] };
   return json.variables ?? [];
 };

@@ -67,8 +67,8 @@ const CodeEditor: React.FC<CodeEditorProps> = (props) => {
   const templateId = Array.isArray(searchTemplateName)
     ? searchTemplateName[0]
     : typeof searchTemplateName === 'string'
-      ? searchTemplateName
-      : undefined;
+    ? searchTemplateName
+    : undefined;
   const template = templateId && file ? file.templates.find(({ name }) => name === templateId) : undefined;
 
   const hash = props.location?.hash ?? '';
@@ -231,7 +231,7 @@ const CodeEditor: React.FC<CodeEditorProps> = (props) => {
       }}
       telemetryClient={TelemetryClient}
       value={defaultLangContent}
-      onChange={() => { }}
+      onChange={() => {}}
     />
   );
 
