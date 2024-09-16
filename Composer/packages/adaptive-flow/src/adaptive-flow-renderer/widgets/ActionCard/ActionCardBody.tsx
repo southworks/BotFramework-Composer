@@ -45,7 +45,7 @@ export const ActionCardBody: WidgetComponent<ActionCardBodyProps> = ({ body, tru
   return (
     <div css={containerStyle()}>
       {!hideComment && flowCommentsVisible && comment && <CardComment comment={comment} />}
-      <div css={textStyles(undefined, truncate)}>{body || ' '}</div>
+      <div css={textStyles(undefined, truncate)}>{body || ''}</div>
     </div>
   );
 };
