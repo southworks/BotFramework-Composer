@@ -28,6 +28,7 @@ export function RecentBotList(props: RecentBotListProps): JSX.Element {
     {
       key: 'column1',
       name: formatMessage('Name'),
+      role: 'columnheader',
       fieldName: 'name',
       minWidth: 150,
       maxWidth: 200,
@@ -36,7 +37,7 @@ export function RecentBotList(props: RecentBotListProps): JSX.Element {
       data: 'string',
       onRender: (item) => {
         return (
-          <div data-is-focusable css={home.tableCell}>
+          <div data-is-focusable css={home.tableCell} role="columnheader">
             <Link
               aria-label={formatMessage(`Bot name is {botName}`, { botName: item.name })}
               onClick={() => onItemChosen(item)}
@@ -51,6 +52,7 @@ export function RecentBotList(props: RecentBotListProps): JSX.Element {
     {
       key: 'column2',
       name: formatMessage('Location'),
+      role: 'columnheader',
       fieldName: 'path',
       minWidth: 200,
       maxWidth: 400,
@@ -58,10 +60,11 @@ export function RecentBotList(props: RecentBotListProps): JSX.Element {
       data: 'string',
       onRender: (item) => {
         return (
-          <div data-is-focusable css={home.tableCell}>
+          <div data-is-focusable css={home.tableCell} role="columnheader">
             <div
               aria-label={formatMessage(`location is {location}`, { location: item.path })}
               css={home.content}
+              role="row"
               tabIndex={-1}
             >
               {item.path}
@@ -74,6 +77,7 @@ export function RecentBotList(props: RecentBotListProps): JSX.Element {
     {
       key: 'column3',
       name: formatMessage('Date modified'),
+      role: 'columnheader',
       fieldName: 'dateModifiedValue',
       minWidth: 60,
       maxWidth: 70,
@@ -81,10 +85,11 @@ export function RecentBotList(props: RecentBotListProps): JSX.Element {
       data: 'number',
       onRender: (item) => {
         return (
-          <div data-is-focusable css={home.tableCell}>
+          <div data-is-focusable css={home.tableCell} role="columnheader">
             <div
               aria-label={formatMessage(`Last modified time is {time}`, { time: calculateTimeDiff(item.dateModified) })}
               css={home.content}
+              role="row"
               tabIndex={-1}
             >
               {calculateTimeDiff(item.dateModified)}
